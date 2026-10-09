@@ -1,0 +1,59 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "schema-version": "1.18.0",
+    "install": {
+      "swiftlint": {
+        "pkg-path": "swiftlint"
+      }
+    },
+    "hook": {},
+    "profile": {},
+    "options": {
+      "systems": [
+        "aarch64-darwin"
+      ]
+    },
+    "build": {
+      "bigarrow": {
+        "command": "  /usr/bin/swift build --disable-sandbox --configuration release\n  mkdir -p \"$out/bin\" \"$out/share/bigarrow/skill\"\n  cp \"$(/usr/bin/swift build --configuration release --show-bin-path)/bigarrow\" \"$out/bin/\"\n  cp -R skill/big-arrow \"$out/share/bigarrow/skill/\"\n",
+        "runtime-packages": [],
+        "version": {
+          "command": "sed -n 's/.*current = \"\\(.*\\)\"/\\1/p' Sources/BigArrowCore/BigArrowVersion.swift"
+        },
+        "description": "Point at things on the macOS screen with a big arrow and a sign, for AI agents"
+      }
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "swiftlint",
+      "broken": false,
+      "derivation": "/nix/store/dxyrhl034rkpi16rhwlz73rvzhll9nis-swiftlint-0.65.1.drv",
+      "description": "Tool to enforce Swift style and conventions",
+      "install_id": "swiftlint",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
+      "name": "swiftlint-0.65.1",
+      "pname": "swiftlint",
+      "rev": "e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
+      "rev_count": 1087755,
+      "rev_date": "2026-10-08T10:40:40Z",
+      "scrape_date": "2026-10-09T05:02:38.116980Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.65.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/z4c5i3vz3w5q7aq6spx6ndylq31b19p9-swiftlint-0.65.1"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}
