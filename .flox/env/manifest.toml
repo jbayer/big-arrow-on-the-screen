@@ -80,10 +80,15 @@ swiftlint.pkg-path = "swiftlint"
 [build.bigarrow]
 description = "Point at things on the macOS screen with a big arrow and a sign, for AI agents"
 version.command = "sed -n 's/.*current = \"\\(.*\\)\"/\\1/p' Sources/BigArrowCore/BigArrowVersion.swift"
+# The real binary lives in libexec: Flox wraps everything in bin/ and renames it to
+# .bigarrow-wrapped, but `stop`, `wait` and `stop --cards` only recognise processes
+# named exactly "bigarrow" (PidRegistry.processName).
 command = '''
   /usr/bin/swift build --disable-sandbox --configuration release
-  mkdir -p "$out/bin" "$out/share/bigarrow/skill"
-  cp "$(/usr/bin/swift build --configuration release --show-bin-path)/bigarrow" "$out/bin/"
+  mkdir -p "$out/bin" "$out/libexec/bigarrow" "$out/share/bigarrow/skill"
+  cp "$(/usr/bin/swift build --configuration release --show-bin-path)/bigarrow" "$out/libexec/bigarrow/"
+  printf '#!/bin/sh\nexec "%s/libexec/bigarrow/bigarrow" "$@"\n' "$out" > "$out/bin/bigarrow"
+  chmod +x "$out/bin/bigarrow"
   cp -R skill/big-arrow "$out/share/bigarrow/skill/"
 '''
 runtime-packages = []
