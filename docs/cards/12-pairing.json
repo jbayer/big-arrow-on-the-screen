@@ -1,0 +1,15 @@
+{
+  "title": "Franz, pair the TV",
+  "rows": [
+    {
+      "type": "totp",
+      "label": "Pairing code",
+      "value": "GEZDGNBVGY3TQOJQ"
+    },
+    {
+      "type": "qr",
+      "label": "Or scan it",
+      "value": "https://example.com/pair?code=482913"
+    }
+  ]
+}

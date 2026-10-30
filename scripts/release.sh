@@ -13,7 +13,7 @@ grep -q "## \[$VERSION\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$VERSION]
 sed -i '' "s/public static let current = \".*\"/public static let current = \"$VERSION\"/" Sources/BigArrowCore/BigArrowVersion.swift
 swift build -c release
 [ "$(.build/release/bigarrow --version)" = "bigarrow $VERSION" ]
-git commit -qam "Release $TAG"
+git diff --quiet || git commit -qam "Release $TAG"
 git tag -a "$TAG" -m "bigarrow $TAG"
 git push -q origin main "$TAG"
 

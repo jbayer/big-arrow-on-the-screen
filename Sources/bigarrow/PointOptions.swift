@@ -51,7 +51,7 @@ struct TargetOptions: ParsableArguments {
 }
 
 struct LookOptions: ParsableArguments {
-    @Option(help: help("The sign. Write a full sentence: 'Franz, click Allow'.", "text"))
+    @Option(help: help("The sign. Write a full sentence: 'Franz, click Allow'. {{value}} shows value with a copy button.", "text"))
     var text: String
 
     @Option(help: help(
@@ -133,4 +133,11 @@ struct BehaviourOptions: ParsableArguments {
 
     @Option(help: help("Render the arrow into this PNG (transparent background) instead of showing it.", "file"))
     var png: String?
+
+    @Option(help: help("Show a cue card with the arrow: a JSON card file, or - for stdin (see 'bigarrow card --help').", "file"))
+    var card: String?
+
+    /// Set by `start` on its detached child: the card's reply goes to a file for `bigarrow wait`.
+    @Flag(name: .customLong("reply-file"), help: .hidden)
+    var replyFile = false
 }

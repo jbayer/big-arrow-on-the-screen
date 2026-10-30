@@ -39,6 +39,20 @@ $KIT click "$X" "$Y"; sleep 1
 check "a click on the sign ends the arrow" "! kill -0 $PID 2>/dev/null"
 check "clicking the sign keeps the focus" "[ \"\$($KIT frontmost)\" = \"$FRONT\" ]"
 
+# A copy chip: a real click puts its value on the clipboard and keeps the arrow; the rest of the
+# sign still ends it.
+printf 'before' | pbcopy
+$BIN start --at 300,300 --text "Copy {{bigarrow-copy-check}} and paste it here" --json > "$OUT/copy.json"
+PID=$(field "$OUT/copy.json" "['pid']")
+read -r X Y < <(python3 -c "import json; c=json.load(open('$OUT/copy.json'))['copyButtons'][0]; print(int(c[0]+c[2]/2), int(c[1]+c[3]/2))")
+sleep 1; $KIT click "$X" "$Y"; sleep 0.3; screencapture -x "$OUT/copy-clicked.png"; sleep 0.5
+check "a click on a copy chip copies its value ($(pbpaste))" "[ \"\$(pbpaste)\" = bigarrow-copy-check ]"
+check "a click on a copy chip keeps the arrow" "kill -0 $PID 2>/dev/null"
+read -r X Y < <(python3 -c "import json; s=json.load(open('$OUT/copy.json'))['sign']; print(int(s[0]+14), int(s[1]+s[3]/2))")
+$KIT click "$X" "$Y"; sleep 1
+check "a click beside the chip still ends the arrow" "! kill -0 $PID 2>/dev/null"
+check "copying keeps the focus" "[ \"\$($KIT frontmost)\" = \"$FRONT\" ]"
+
 # --until-click: a click on the target ends it with dismissedReason clicked.
 $BIN point --at 400,500 --text "Click the target" --until-click --json > "$OUT/until-click.json" & POINT=$!
 sleep 1.5; $KIT click 400 500; wait $POINT

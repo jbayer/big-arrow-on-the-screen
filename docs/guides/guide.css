@@ -1,0 +1,20 @@
+/* Print style for the guides, used by scripts/guide-pdf.sh. No text below 12pt (16px). */
+@page {
+  size: A4;
+  margin: 18mm 18mm 20mm;
+  @bottom-left { content: "Made with bigarrow - github.com/franzenzenhofer/big-arrow-on-the-screen"; font: 12pt "Helvetica Neue", Helvetica, sans-serif; color: #8e8e93; }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 12pt "Helvetica Neue", Helvetica, sans-serif; color: #8e8e93; }
+}
+html { font: 13pt/1.45 "Helvetica Neue", Helvetica, sans-serif; color: #1d1d1f; }
+body { margin: 0; }
+h1 { font-size: 30pt; line-height: 1.1; margin: 4mm 0 6mm; letter-spacing: -0.02em; }
+h1 + p { font-size: 15pt; color: #3a3a3c; }
+section { break-inside: avoid; margin-top: 8mm; }
+h2 { font-size: 20pt; margin: 0 0 3mm; color: #0a84ff; }
+h2 + p { font-size: 14pt; }
+p { margin: 0 0 4mm; }
+a { color: #0a64d6; text-decoration: none; }
+img { display: block; max-width: 100%; max-height: 88mm; margin: 3mm auto; border-radius: 3mm; border: 0.3mm solid #d1d1d6; }
+pre { font: 12pt/1.35 Menlo, monospace; background: #f2f2f7; border-radius: 2mm; padding: 3mm 4mm; white-space: pre-wrap; overflow-wrap: anywhere; }
+code { font-family: Menlo, monospace; font-size: 12pt; }
+strong { color: #000; }

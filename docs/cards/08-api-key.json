@@ -1,0 +1,18 @@
+{
+  "title": "Franz, paste the API key into the dashboard",
+  "rows": [
+    {
+      "type": "field",
+      "label": "OPENROUTER_API_KEY",
+      "value": "sk-or-v1-0000000000000000000000000000",
+      "masked": true,
+      "point": {
+        "element": "API key"
+      }
+    },
+    {
+      "type": "text",
+      "value": "It leaves your clipboard 30 s after you copy it."
+    }
+  ]
+}

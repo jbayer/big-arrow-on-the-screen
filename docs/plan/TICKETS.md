@@ -1,6 +1,6 @@
 # Tickets
 
-Generated from `tickets.json` by `scripts/render-tickets.py`. 50 tickets: 44 done, 3 not now, 3 later.
+Generated from `tickets.json` by `scripts/render-tickets.py`. 57 tickets: 54 done, 3 not now.
 
 ## M0 Skeleton and proof
 
@@ -528,7 +528,7 @@ The real criticism and the real use cases from the Hacker News thread (https://n
 **Status: Done** · Issue: #38  
 Labels: `bug` `priority:P1` `size:S`
 
-**Outcome**: Mark group pinned to the mark's centre (MarkTests: 55 pt drift before, under 0.5 pt after); found by @jarombouts in #37.
+**Outcome**: Mark group pinned to the mark's centre. MarkTests: 55 pt drift before, under 0.5 pt after; on Arthur Mac's real screen the box centre moves at most 1 pt across 8 pulse frames. Found by @jarombouts in #37.
 
 The mark layer covers the whole display, so the pulse scales it around the display's centre and a box away from the centre swims by up to 8 % of that distance every 0.9 s. Pulse each mark around its own centre. Found and fixed by @jarombouts in PR #37 (commit 5d1d1c4); take that fix with credit, without the effects.
 
@@ -552,10 +552,10 @@ Commenters could not parse the permissions FAQ (https://news.ycombinator.com/ite
 
 ### T43 README: real apps, real use cases, big screenshots from the test Mac
 
-**Status: Later** · Issue: #40  
+**Status: Done** · Issue: #40  
 Labels: `type:docs` `priority:P1` `size:M`
 
-**Outcome**: Open.
+**Outcome**: scripts/real-scenes.sh records five real-app scenes on macOS 27 (System Settings, Keynote, TextEdit print, Chrome tabs, Finder), shown one per row in "Real apps, real use cases"; plus the guide docs/guides/allow-screen-recording/ (six steps, real password sheet). Recorded by Arthur.
 
 The strongest reactions were about guiding, not doing: a tutorial in a complicated app (https://news.ycombinator.com/item?id=50019008, https://news.ycombinator.com/item?id=50020002), docs where the screenshot still makes you search (https://news.ycombinator.com/item?id=50019113), helping a parent over the phone (https://news.ycombinator.com/item?id=50019233, https://news.ycombinator.com/item?id=50019407, https://news.ycombinator.com/item?id=50020456). The README only shows staged dialogs and a joke HN page. Record real apps on the test Mac (System Settings, Keynote, Chrome, Finder) with real bigarrow commands, nothing personal on screen, C2PA stripped, and show them big further down the README.
 
@@ -565,10 +565,10 @@ The strongest reactions were about guiding, not doing: a tutorial in a complicat
 
 ### T44 Hero: re-stage the arrows on short, clean paths
 
-**Status: Later** · Issue: #41  
+**Status: Done** · Issue: #41  
 Labels: `type:docs` `priority:P2` `size:S`
 
-**Outcome**: Open.
+**Outcome**: Re-staged on the 2014-06-10 front page in a Chrome app window; five short straight arrows, none crosses a headline. scripts/hn-scene.sh reproduces it.
 
 'Even the example arrows in the first screenshot are wonky' (https://news.ycombinator.com/item?id=50020187). The long orange arc crosses six headlines and the red one hooks back on itself. Keep the scene and the jokes; pick sources and shapes so no shaft crosses text. No rendering change.
 
@@ -589,10 +589,10 @@ Labels: `type:docs` `priority:P1` `size:S`
 
 ### T46 Skill: deep-link first, point second
 
-**Status: Later** · Issue: #43  
+**Status: Done** · Issue: #43  
 Labels: `type:docs` `priority:P2` `size:S`
 
-**Outcome**: Open.
+**Outcome**: SKILL.md "Open the place first, then point" with deep links verified on macOS 27 (docs/research/2026-10-09-system-settings-deep-links.md); permission errors name the macOS 27 pane "Device Control and Data Access".
 
 'Have we thought about using hyperlinks?' (https://news.ycombinator.com/item?id=50020859). For System Settings the agent should open the exact pane with its `x-apple.systempreferences:` URL, then point at the one control, instead of pointing through five clicks.
 
@@ -640,3 +640,102 @@ Labels: `type:research` `priority:P3` `size:L`
 **Outcome**: Not possible on iOS/iPadOS: no app may draw over other apps.
 
 Asked for helping aging parents (https://news.ycombinator.com/item?id=50019407). iOS and iPadOS do not let one app draw over other apps, so the tool cannot exist there in this form. macOS only.
+
+## M7 Hand-offs (2026-10-09)
+
+Steps where the agent hands something to the human, beyond a click.
+
+### T51 Copy buttons in the sign
+
+**Status: Done**  
+Labels: `type:feature` `area:overlay` `area:cli` `priority:P1` `size:M`
+
+**Outcome**: `{{value}}` copy chips with Feather icons, verified by a real click on Arthur Mac and a behaviour check; README section "Copy & paste": a made-up PIN, before and after the click. The skill teaches it: values to paste go on the sign as `{{value}}`, a copy click keeps the arrow.
+
+The human often has to paste something the agent may not type: a `sudo` command, a URL, a code. `{{value}}` in `--text` puts the value on the sign with a copy button; one click copies it and the arrow keeps pointing where it goes. Plan: `docs/plan/2026-10-09-copy-button.md`.
+
+**Acceptance criteria**
+- A real click on the chip puts the value on the clipboard and keeps the arrow; a click elsewhere on the sign still ends it.
+- No permission needed; icon from an MIT library with its licence in the repo.
+- README section with a real use case and a small one.
+
+## M8 Cue cards (2026-10-26)
+
+Values, secrets and questions on a floating card that combines with the arrow both ways. Spec: docs/plan/2026-10-26-cue-cards.md.
+
+### T52 Card format, secret sources, TOTP
+
+**Status: Done**  
+Labels: `type:feature` `area:cli` `priority:P1` `size:M`
+
+**Outcome**: `CardDocument`, `CardRow`, `SecretSource`, `TOTP` in BigArrowCore; unit tests against the RFC vectors and the real login keychain.
+
+A JSON card (title, rows, app, colour, duration, theme) with 13 row types, strict validation (unknown keys exit 2), secret sources pass/keychain/op/env/file (never argv), RFC 6238 TOTP.
+
+**Acceptance criteria**
+- A literal secret on the command line exits 2 without echoing it.
+- TOTP matches the RFC 6238 vectors.
+- Every use case in docs/cards parses.
+
+### T53 The card window
+
+**Status: Done**  
+Labels: `type:feature` `area:overlay` `priority:P1` `size:L`
+
+**Outcome**: `CardView`, `CardPanel`, row views; 24 behaviour checks pass on the test Mac (`scripts/card-check.sh`); `scripts/card-gallery.py` renders the 20 use cases.
+
+A floating, non-activating panel: header in the card colour with an X, rows with copy, reveal and open buttons, choices, a question, a checklist, progress, QR, image, a file to drag out. Light and dark, nothing under 16 pt.
+
+**Acceptance criteria**
+- Showing it and clicking it never moves the focus; typing into it keeps the human's app frontmost.
+- `--png` renders it offscreen.
+
+### T54 card, wait, update and the reply
+
+**Status: Done**  
+Labels: `type:feature` `area:cli` `priority:P1` `size:M`
+
+**Outcome**: `CardCommand`, `WaitCommand`, `ChildProcess` (stdin pipe), reply files in the registry, cleaned after an hour.
+
+`bigarrow card` detaches and prints pid, frame and control frames; `wait` prints the reply (exit 0 answered, 1 not); `--wait`; `--update` replaces rows; lifetimes as for arrows (time limit, stop, hook, owner exit).
+
+**Acceptance criteria**
+- The reply names copied rows, never values.
+- Secrets reach the detached child through a pipe, never its arguments.
+
+### T55 Arrow and card together
+
+**Status: Done**  
+Labels: `type:feature` `area:overlay` `area:targeting` `priority:P1` `size:M`
+
+**Outcome**: `CardArrows` plans row arrows with the same code as `point`; checked on the test Mac.
+
+`point/start --card` shows an arrow with a card as one process; a row's `point` aims the arrow at where its value goes and moves on as the human copies.
+
+**Acceptance criteria**
+- One `stop` ends both; the reply reaches `wait`.
+- An update without points drops the arrow.
+
+### T56 Secrets on the clipboard and on screen
+
+**Status: Done**  
+Labels: `type:feature` `area:overlay` `priority:P1` `size:S`
+
+**Outcome**: `CardClipboard`, the hidden `clipboard-guard` helper, `sharingType = .none` for secret cards only (other cards stay visible in screenshots and demos).
+
+Copied secrets carry the nspasteboard.org concealed and transient markers and leave the clipboard after 30 s unless something else was copied; a card with a secret is kept out of screen capture.
+
+**Acceptance criteria**
+- Verified with real clicks and `screencapture` on the test Mac.
+
+### T57 Skill, README and release 0.5.0
+
+**Status: Done**  
+Labels: `type:docs` `area:skill` `priority:P1` `size:S`
+
+**Outcome**: SKILL.md section "Cards: values, secrets, answers", reference.md "Cards", README "Cue cards".
+
+The skill teaches cards (one value: chip; more, a secret or a question: card), reference.md lists the format; README section with rendered cards; release 0.5.0.
+
+**Acceptance criteria**
+- "Needs bigarrow 0.5.0" and the binary agree (`SkillVersionTests`).

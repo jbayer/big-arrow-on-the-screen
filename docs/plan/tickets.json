@@ -34,6 +34,16 @@
       "key": "M6",
       "title": "M6 Hacker News feedback (2026-10-09)",
       "description": "The real criticism and the real use cases from the Hacker News thread (https://news.ycombinator.com/item?id=50018817) and from PRs #36 and #37. Triage: docs/feedback/2026-10-09-hacker-news.md."
+    },
+    {
+      "key": "M7",
+      "title": "M7 Hand-offs (2026-10-09)",
+      "description": "Steps where the agent hands something to the human, beyond a click."
+    },
+    {
+      "key": "M8",
+      "title": "M8 Cue cards (2026-10-26)",
+      "description": "Values, secrets and questions on a floating card that combines with the arrow both ways. Spec: docs/plan/2026-10-26-cue-cards.md."
     }
   ],
   "labels": [
@@ -723,7 +733,7 @@
       ],
       "body": "The mark layer covers the whole display, so the pulse scales it around the display's centre and a box away from the centre swims by up to 8 % of that distance every 0.9 s. Pulse each mark around its own centre. Found and fixed by @jarombouts in PR #37 (commit 5d1d1c4); take that fix with credit, without the effects.\n\n**Acceptance criteria**\n- A unit test proves every mark layer's anchor is the target's centre.\n- A real screen check on the test Mac shows the box still while it pulses.",
       "status": "done",
-      "outcome": "Mark group pinned to the mark's centre (MarkTests: 55 pt drift before, under 0.5 pt after); found by @jarombouts in #37.",
+      "outcome": "Mark group pinned to the mark's centre. MarkTests: 55 pt drift before, under 0.5 pt after; on Arthur Mac's real screen the box centre moves at most 1 pt across 8 pulse frames. Found by @jarombouts in #37.",
       "issue": "#38"
     },
     {
@@ -750,8 +760,8 @@
         "size:M"
       ],
       "body": "The strongest reactions were about guiding, not doing: a tutorial in a complicated app (https://news.ycombinator.com/item?id=50019008, https://news.ycombinator.com/item?id=50020002), docs where the screenshot still makes you search (https://news.ycombinator.com/item?id=50019113), helping a parent over the phone (https://news.ycombinator.com/item?id=50019233, https://news.ycombinator.com/item?id=50019407, https://news.ycombinator.com/item?id=50020456). The README only shows staged dialogs and a joke HN page. Record real apps on the test Mac (System Settings, Keynote, Chrome, Finder) with real bigarrow commands, nothing personal on screen, C2PA stripped, and show them big further down the README.\n\n**Acceptance criteria**\n- A script reproduces every shot from the repo.\n- At least four real-app scenes, each with the exact command under it.",
-      "status": "later",
-      "outcome": "Open.",
+      "status": "done",
+      "outcome": "scripts/real-scenes.sh records five real-app scenes on macOS 27 (System Settings, Keynote, TextEdit print, Chrome tabs, Finder), shown one per row in \"Real apps, real use cases\"; plus the guide docs/guides/allow-screen-recording/ (six steps, real password sheet). Recorded by Arthur.",
       "issue": "#40"
     },
     {
@@ -764,8 +774,8 @@
         "size:S"
       ],
       "body": "'Even the example arrows in the first screenshot are wonky' (https://news.ycombinator.com/item?id=50020187). The long orange arc crosses six headlines and the red one hooks back on itself. Keep the scene and the jokes; pick sources and shapes so no shaft crosses text. No rendering change.\n\n**Acceptance criteria**\n- No shaft crosses a headline; every arrow takes the short way to its target.",
-      "status": "later",
-      "outcome": "Open.",
+      "status": "done",
+      "outcome": "Re-staged on the 2014-06-10 front page in a Chrome app window; five short straight arrows, none crosses a headline. scripts/hn-scene.sh reproduces it.",
       "issue": "#41"
     },
     {
@@ -792,8 +802,8 @@
         "size:S"
       ],
       "body": "'Have we thought about using hyperlinks?' (https://news.ycombinator.com/item?id=50020859). For System Settings the agent should open the exact pane with its `x-apple.systempreferences:` URL, then point at the one control, instead of pointing through five clicks.\n\n**Acceptance criteria**\n- SKILL.md lists the pane URLs verified on macOS 27 on the test Mac.",
-      "status": "later",
-      "outcome": "Open.",
+      "status": "done",
+      "outcome": "SKILL.md \"Open the place first, then point\" with deep links verified on macOS 27 (docs/research/2026-10-09-system-settings-deep-links.md); permission errors name the macOS 27 pane \"Device Control and Data Access\".",
       "issue": "#43"
     },
     {
@@ -851,6 +861,106 @@
       "status": "not now",
       "outcome": "Not possible on iOS/iPadOS: no app may draw over other apps.",
       "issue": "#47"
+    },
+    {
+      "key": "T51",
+      "milestone": "M7",
+      "title": "Copy buttons in the sign",
+      "labels": [
+        "type:feature",
+        "area:overlay",
+        "area:cli",
+        "priority:P1",
+        "size:M"
+      ],
+      "body": "The human often has to paste something the agent may not type: a `sudo` command, a URL, a code. `{{value}}` in `--text` puts the value on the sign with a copy button; one click copies it and the arrow keeps pointing where it goes. Plan: `docs/plan/2026-10-09-copy-button.md`.\n\n**Acceptance criteria**\n- A real click on the chip puts the value on the clipboard and keeps the arrow; a click elsewhere on the sign still ends it.\n- No permission needed; icon from an MIT library with its licence in the repo.\n- README section with a real use case and a small one.",
+      "status": "done",
+      "outcome": "`{{value}}` copy chips with Feather icons, verified by a real click on Arthur Mac and a behaviour check; README section \"Copy & paste\": a made-up PIN, before and after the click. The skill teaches it: values to paste go on the sign as `{{value}}`, a copy click keeps the arrow."
+    },
+    {
+      "key": "T52",
+      "milestone": "M8",
+      "title": "Card format, secret sources, TOTP",
+      "labels": [
+        "type:feature",
+        "area:cli",
+        "priority:P1",
+        "size:M"
+      ],
+      "body": "A JSON card (title, rows, app, colour, duration, theme) with 13 row types, strict validation (unknown keys exit 2), secret sources pass/keychain/op/env/file (never argv), RFC 6238 TOTP.\n\n**Acceptance criteria**\n- A literal secret on the command line exits 2 without echoing it.\n- TOTP matches the RFC 6238 vectors.\n- Every use case in docs/cards parses.",
+      "status": "done",
+      "outcome": "`CardDocument`, `CardRow`, `SecretSource`, `TOTP` in BigArrowCore; unit tests against the RFC vectors and the real login keychain."
+    },
+    {
+      "key": "T53",
+      "milestone": "M8",
+      "title": "The card window",
+      "labels": [
+        "type:feature",
+        "area:overlay",
+        "priority:P1",
+        "size:L"
+      ],
+      "body": "A floating, non-activating panel: header in the card colour with an X, rows with copy, reveal and open buttons, choices, a question, a checklist, progress, QR, image, a file to drag out. Light and dark, nothing under 16 pt.\n\n**Acceptance criteria**\n- Showing it and clicking it never moves the focus; typing into it keeps the human's app frontmost.\n- `--png` renders it offscreen.",
+      "status": "done",
+      "outcome": "`CardView`, `CardPanel`, row views; 24 behaviour checks pass on the test Mac (`scripts/card-check.sh`); `scripts/card-gallery.py` renders the 20 use cases."
+    },
+    {
+      "key": "T54",
+      "milestone": "M8",
+      "title": "card, wait, update and the reply",
+      "labels": [
+        "type:feature",
+        "area:cli",
+        "priority:P1",
+        "size:M"
+      ],
+      "body": "`bigarrow card` detaches and prints pid, frame and control frames; `wait` prints the reply (exit 0 answered, 1 not); `--wait`; `--update` replaces rows; lifetimes as for arrows (time limit, stop, hook, owner exit).\n\n**Acceptance criteria**\n- The reply names copied rows, never values.\n- Secrets reach the detached child through a pipe, never its arguments.",
+      "status": "done",
+      "outcome": "`CardCommand`, `WaitCommand`, `ChildProcess` (stdin pipe), reply files in the registry, cleaned after an hour."
+    },
+    {
+      "key": "T55",
+      "milestone": "M8",
+      "title": "Arrow and card together",
+      "labels": [
+        "type:feature",
+        "area:overlay",
+        "area:targeting",
+        "priority:P1",
+        "size:M"
+      ],
+      "body": "`point/start --card` shows an arrow with a card as one process; a row's `point` aims the arrow at where its value goes and moves on as the human copies.\n\n**Acceptance criteria**\n- One `stop` ends both; the reply reaches `wait`.\n- An update without points drops the arrow.",
+      "status": "done",
+      "outcome": "`CardArrows` plans row arrows with the same code as `point`; checked on the test Mac."
+    },
+    {
+      "key": "T56",
+      "milestone": "M8",
+      "title": "Secrets on the clipboard and on screen",
+      "labels": [
+        "type:feature",
+        "area:overlay",
+        "priority:P1",
+        "size:S"
+      ],
+      "body": "Copied secrets carry the nspasteboard.org concealed and transient markers and leave the clipboard after 30 s unless something else was copied; a card with a secret is kept out of screen capture.\n\n**Acceptance criteria**\n- Verified with real clicks and `screencapture` on the test Mac.",
+      "status": "done",
+      "outcome": "`CardClipboard`, the hidden `clipboard-guard` helper, `sharingType = .none` for secret cards only (other cards stay visible in screenshots and demos)."
+    },
+    {
+      "key": "T57",
+      "milestone": "M8",
+      "title": "Skill, README and release 0.5.0",
+      "labels": [
+        "type:docs",
+        "area:skill",
+        "priority:P1",
+        "size:S"
+      ],
+      "body": "The skill teaches cards (one value: chip; more, a secret or a question: card), reference.md lists the format; README section with rendered cards; release 0.5.0.\n\n**Acceptance criteria**\n- \"Needs bigarrow 0.5.0\" and the binary agree (`SkillVersionTests`).",
+      "status": "done",
+      "outcome": "SKILL.md section \"Cards: values, secrets, answers\", reference.md \"Cards\", README \"Cue cards\"."
     }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "title": "Franz, put the workshop in your calendar",
+  "app": "Calendar",
+  "rows": [
+    {
+      "type": "field",
+      "label": "Date",
+      "value": "Thursday, 12 November 2026"
+    },
+    {
+      "type": "field",
+      "label": "Time",
+      "value": "09:00 to 17:00"
+    },
+    {
+      "type": "field",
+      "label": "Address",
+      "value": "Mariahilfer Strasse 1, 1060 Wien"
+    }
+  ]
+}

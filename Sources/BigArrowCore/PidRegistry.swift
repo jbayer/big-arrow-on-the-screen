@@ -13,6 +13,10 @@ public struct ArrowRecord: Codable, Equatable, Sendable {
     public let startedAt: Date
     /// The agent session that drew the arrow, if it was started from one.
     public var owner: ArrowOwner?
+    /// "card" for a cue card (its frame is `signFrame`); nil for an arrow.
+    public var kind: String?
+    /// A card's buttons and fields in global top-left points.
+    public var controls: [CardControl]?
 
     public init(pid: Int32, text: String, target: CGPoint, display: Int, sign: (frame: CGRect, direction: String), startedAt: Date) {
         self.pid = pid
@@ -57,9 +61,25 @@ public struct PidRegistry: Sendable {
         try? FileManager.default.removeItem(at: file(for: pid))
     }
 
+    /// What the human did with card `pid`, written when the card ends and read by `bigarrow wait`.
+    public func replyFile(for pid: Int32) -> URL {
+        directory.appendingPathComponent("\(pid).\(Self.replyExtension)")
+    }
+
+    public static let replyExtension = "reply"
+
+    /// Written readable by this user only, since a typed answer can be private.
+    public func writeReply(_ reply: CardReply) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = replyFile(for: reply.pid)
+        try Data(reply.line().utf8).write(to: url, options: .atomic)
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+    }
+
     /// Live arrows, oldest first. Stale and unreadable files are removed.
     public func live() -> [ArrowRecord] {
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
+        removeStaleReplies(files)
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let records = files.filter { $0.pathExtension == "json" }.compactMap { url -> ArrowRecord? in
@@ -72,6 +92,16 @@ public struct PidRegistry: Sendable {
             return record
         }
         return records.sorted { $0.startedAt < $1.startedAt }
+    }
+
+    /// Replies nobody waited for are gone after an hour.
+    public static let replyLifetime: TimeInterval = 3600
+
+    func removeStaleReplies(_ files: [URL]) {
+        for file in files where file.pathExtension == Self.replyExtension {
+            let modified = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
+            if Date().timeIntervalSince(modified) > Self.replyLifetime { try? FileManager.default.removeItem(at: file) }
+        }
     }
 
     /// Any process with this pid exists.

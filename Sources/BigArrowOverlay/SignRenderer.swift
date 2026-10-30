@@ -2,10 +2,10 @@ import AppKit
 import BigArrowCore
 
 /// The sign: a pill (or square) in the arrow colour with its border (see `ArrowBorder`), heavy
-/// rounded text, and with `--close-button` an X in its right end. Edge, body and text are separate
-/// images: the thin black edge goes below every white border of the arrow, so it never cuts
-/// through the white where the shaft meets the sign, and the arrow's root is drawn between body
-/// and text, so it blends into the body and never covers a letter.
+/// rounded text with a copy chip for every `{{value}}`, and with `--close-button` an X in its
+/// right end. Edge, body and text are separate images: the thin black edge goes below every white
+/// border of the arrow, so it never cuts through the white where the shaft meets the sign, and the
+/// arrow's root is drawn between body and text, so it blends into the body and never covers a letter.
 public struct SignImage: @unchecked Sendable {
     public let edge: CGImage
     public let body: CGImage
@@ -14,6 +14,15 @@ public struct SignImage: @unchecked Sendable {
     public let size: CGSize
     public let fontSize: CGFloat
     public let lines: Int
+    public var copyButtons: [CopyButton] = []
+}
+
+/// A chip in the sign: where it is (bottom-left points of the sign), what a click copies, and the
+/// sign's text image with this chip showing a check, shown for a moment after the click.
+public struct CopyButton: @unchecked Sendable {
+    public let rect: CGRect
+    public let value: String
+    public let copiedText: CGImage
 }
 
 public enum SignRenderer {
@@ -31,36 +40,50 @@ public enum SignRenderer {
     static let crossGap: CGFloat = 12
     static let crossMargin: CGFloat = 20
 
-    /// Shrinks the font until the text fits in `maxLines` lines of `maxWidth`, never below the minimum.
-    public static func render(text: String, appearance: SignAppearance, display: Display) -> SignImage {
+    /// Lays out the text, then draws edge, body and text, and one text image per copy chip with
+    /// that chip showing a check.
+    public static func render(text: SignText, appearance: SignAppearance, display: Display) -> SignImage {
         let maxTextWidth = display.frame.width * ArrowMetrics.maximumSignWidthShare - paddingX * 2
-        var fontSize = appearance.size.metrics.fontSize
-        var layout = measure(text, fontSize: fontSize, maxWidth: maxTextWidth, color: appearance.textTint)
-        while layout.lines > ArrowMetrics.maximumLines, fontSize > ArrowMetrics.minimumFontSize {
-            fontSize = max(fontSize - 2, ArrowMetrics.minimumFontSize)
-            layout = measure(text, fontSize: fontSize, maxWidth: maxTextWidth, color: appearance.textTint)
-        }
-        let cross = appearance.closeMark == .cross ? max(crossMinimum, (fontSize * crossShare).rounded()) : 0
-        let height = ceil(layout.size.height + paddingY * 2)
-        let crossInset = min(height / 2, cross / 2 + crossMargin)
-        let trailing = cross > 0 ? crossGap + cross / 2 + crossInset : paddingX
-        let pill = CGSize(width: ceil(paddingX + layout.size.width + trailing), height: height)
-        let textRect = CGRect(
-            x: paddingX, y: (pill.height - layout.size.height) / 2, width: layout.size.width, height: layout.size.height
-        )
+        let (layout, style) = fit(text, appearance: appearance, display: display, maxWidth: maxTextWidth)
+        let cross = appearance.closeMark == .cross ? max(crossMinimum, (style.fontSize * crossShare).rounded()) : 0
+        let frame = SignFrame(text: layout.size, cross: cross)
+        let (pill, textRect) = (frame.pill, frame.textRect)
         let canvas = Canvas(size: pill, scale: display.scale)
-        return SignImage(
+        let textImage = { (shown: SignTextLayout) in
+            canvas.render { context in
+                shown.draw(in: context, rect: textRect)
+                guard let center = frame.crossCenter else { return }
+                drawCross(in: context, center: center, diameter: cross, appearance: appearance)
+            }
+        }
+        var image = SignImage(
             edge: canvas.render { drawEdge(in: $0, pill: pill, appearance: appearance) },
             body: canvas.render { drawBody(in: $0, pill: pill, appearance: appearance) },
-            text: canvas.render { context in
-                drawText(layout, in: context, rect: textRect)
-                if cross > 0 {
-                    let center = CGPoint(x: pill.width - crossInset, y: pill.height / 2)
-                    drawCross(in: context, center: center, diameter: cross, appearance: appearance)
-                }
-            },
-            size: pill, fontSize: fontSize, lines: layout.lines
+            text: textImage(layout), size: pill, fontSize: style.fontSize, lines: layout.lines
         )
+        image.copyButtons = zip(layout.chips, text.copyValues).enumerated().map { index, chip in
+            let (rect, value) = chip
+            let copied = SignTextLayout(text, style: style, maxWidth: maxTextWidth, copied: index)
+            return CopyButton(
+                rect: CGRect(x: textRect.minX + rect.minX, y: textRect.maxY - rect.maxY, width: rect.width, height: rect.height),
+                value: value, copiedText: textImage(copied)
+            )
+        }
+        return image
+    }
+
+    /// Shrinks the font until the text fits in `maximumLines` lines of `maxWidth`, never below the minimum.
+    static func fit(
+        _ text: SignText, appearance: SignAppearance, display: Display, maxWidth: CGFloat
+    ) -> (SignTextLayout, SignTextLayout.Style) {
+        var style = SignTextLayout.Style(fontSize: appearance.size.metrics.fontSize, appearance: appearance, scale: display.scale)
+        var layout = SignTextLayout(text, style: style, maxWidth: maxWidth)
+        while layout.lines > ArrowMetrics.maximumLines, style.fontSize > ArrowMetrics.minimumFontSize {
+            let smaller = max(style.fontSize - 2, ArrowMetrics.minimumFontSize)
+            style = SignTextLayout.Style(fontSize: smaller, appearance: appearance, scale: display.scale)
+            layout = SignTextLayout(text, style: style, maxWidth: maxWidth)
+        }
+        return (layout, style)
     }
 
     /// The X button: a filled circle with the X on it, colours from `closeTint` and `closeXTint`.
@@ -78,35 +101,10 @@ public enum SignRenderer {
         ])
     }
 
-    struct TextLayout {
-        let string: NSAttributedString
-        let size: CGSize
-        let lines: Int
-    }
-
     static func font(_ size: CGFloat) -> NSFont {
         let base = NSFont.systemFont(ofSize: size, weight: .heavy)
         guard let rounded = base.fontDescriptor.withDesign(.rounded) else { return base }
         return NSFont(descriptor: rounded, size: size) ?? base
-    }
-
-    static func measure(_ text: String, fontSize: CGFloat, maxWidth: CGFloat, color: ArrowColor) -> TextLayout {
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
-        paragraph.lineBreakMode = .byWordWrapping
-        let font = font(fontSize)
-        let string = NSAttributedString(string: text, attributes: [
-            .font: font, .paragraphStyle: paragraph,
-            .foregroundColor: NSColor(srgbRed: color.red, green: color.green, blue: color.blue, alpha: 1)
-        ])
-        let bounds = string.boundingRect(
-            with: CGSize(width: maxWidth, height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin, .usesFontLeading]
-        )
-        let lineHeight = NSLayoutManager().defaultLineHeight(for: font)
-        let lines = max(1, Int((bounds.height / lineHeight).rounded()))
-        let size = CGSize(width: ceil(bounds.width), height: ceil(bounds.height))
-        return TextLayout(string: string, size: size, lines: lines)
     }
 
     /// A rounded rect in the sign's corner style.
@@ -158,12 +156,21 @@ public enum SignRenderer {
         let corner = corners.radius(height: rect.height)
         return CGPath(roundedRect: rect, cornerWidth: corner, cornerHeight: corner, transform: nil)
     }
+}
 
-    static func drawText(_ text: TextLayout, in context: CGContext, rect textRect: CGRect) {
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
-        text.string.draw(with: textRect, options: [.usesLineFragmentOrigin, .usesFontLeading])
-        NSGraphicsContext.restoreGraphicsState()
+/// The pill around the text: room for the X button at the right end when there is one.
+struct SignFrame {
+    let pill: CGSize
+    let textRect: CGRect
+    let crossCenter: CGPoint?
+
+    init(text: CGSize, cross: CGFloat) {
+        let height = ceil(text.height + SignRenderer.paddingY * 2)
+        let crossInset = min(height / 2, cross / 2 + SignRenderer.crossMargin)
+        let trailing = cross > 0 ? SignRenderer.crossGap + cross / 2 + crossInset : SignRenderer.paddingX
+        pill = CGSize(width: ceil(SignRenderer.paddingX + text.width + trailing), height: height)
+        textRect = CGRect(x: SignRenderer.paddingX, y: (height - text.height) / 2, width: text.width, height: text.height)
+        crossCenter = cross > 0 ? CGPoint(x: pill.width - crossInset, y: height / 2) : nil
     }
 }
 

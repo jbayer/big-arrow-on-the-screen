@@ -20,8 +20,9 @@ struct SignAndClickTests {
 
     @Test("The X widens the sign by at least its own diameter, so it never covers the text")
     func crossMakesRoom() throws {
-        let plain = SignRenderer.render(text: "Franz, click Allow", appearance: try appearance(.none), display: display)
-        let crossed = SignRenderer.render(text: "Franz, click Allow", appearance: try appearance(.cross), display: display)
+        let text = try SignText.parse("Franz, click Allow")
+        let plain = SignRenderer.render(text: text, appearance: try appearance(.none), display: display)
+        let crossed = SignRenderer.render(text: text, appearance: try appearance(.cross), display: display)
         #expect(crossed.size.height == plain.size.height)
         #expect(crossed.size.width - plain.size.width >= SignRenderer.crossMinimum)
     }
@@ -29,7 +30,7 @@ struct SignAndClickTests {
     @Test("The default drop shadow fades out completely inside the PNG, never cut at its edge")
     func shadowIsNotCut() throws {
         let appearance = try appearance(.none)
-        let sign = SignRenderer.render(text: "Franz, click Allow", appearance: appearance, display: display)
+        let sign = SignRenderer.render(text: try SignText.parse("Franz, click Allow"), appearance: appearance, display: display)
         let layout = OverlayLayout.plan(OverlayLayout.Request(
             target: .point(CGPoint(x: 600, y: 400)), display: display, signSize: sign.size,
             style: .box, size: .medium, forced: .bottomRight
@@ -53,7 +54,7 @@ struct SignAndClickTests {
 
     @Test("A click counts on the sign and the shaft, never near the tip or on the target")
     func region() throws {
-        let sign = SignRenderer.render(text: "Franz, click Allow", appearance: try appearance(.none), display: display)
+        let sign = SignRenderer.render(text: try SignText.parse("Franz, click Allow"), appearance: try appearance(.none), display: display)
         let layout = OverlayLayout.plan(OverlayLayout.Request(
             target: .point(CGPoint(x: 300, y: 250)), display: display, signSize: sign.size,
             style: .arrow, size: .medium, forced: .bottomRight

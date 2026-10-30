@@ -9,6 +9,18 @@ struct PlannedArrow {
     let resolved: ResolvedTarget
     let layout: OverlayLayout
     let sign: SignImage
+
+    /// The result for this arrow, with every copy chip in global top-left points.
+    func result(pid: Int32) -> PointResult {
+        var result = PointResult(pid: pid, resolved: resolved, layout: layout)
+        let sign = layout.signRect.offsetBy(dx: layout.display.frame.minX, dy: layout.display.frame.minY)
+        let chips: [[Double]] = self.sign.copyButtons.map { button in
+            let chip = button.rect
+            return [Double(sign.minX + chip.minX), Double(sign.maxY - chip.maxY), Double(chip.width), Double(chip.height)]
+        }
+        result.copyButtons = chips.isEmpty ? nil : chips
+        return result
+    }
 }
 
 /// Resolves the target, then either prints the plan, detaches, or runs the overlay.
@@ -24,35 +36,50 @@ struct PointRunner {
         }
         let screens = ScreenReader.current()
         let planned = try plan(config.target.resolve(screens: screens), screens: screens)
-        if let png = config.png {
-            var result = PointResult(pid: getpid(), resolved: planned.resolved, layout: planned.layout)
-            let file = URL(fileURLWithPath: png)
-            result.image = try PNGExporter.write(planned.layout, sign: planned.sign, appearance: config.appearance, to: file)
-            Output.print(config.json ? JSONOutput.encode(result) : "bigarrow: wrote \(png)")
-            exit(0)
-        }
+        if let png = config.png { try render(planned, to: png) }
         if config.dryRun {
-            var result = PointResult(pid: getpid(), resolved: planned.resolved, layout: planned.layout)
+            var result = planned.result(pid: getpid())
             result.dryRun = true
             report(result)
             exit(0)
         }
         if config.detach {
             let child = try Detacher(config: config).spawn()
-            var result = PointResult(pid: child.pid, resolved: planned.resolved, layout: planned.layout)
+            var result = planned.result(pid: child.pid)
             result.detached = true
-            result.sign = child.signFrame
+            result.moveSign(to: child.signFrame)
             result.direction = child.direction
             report(result)
             exit(0)
         }
-        try PointSession(config: config, planner: self, initial: planned).start()
+        if let card = config.card {
+            try startCard(card, with: planned)
+        } else {
+            try PointSession(config: config, planner: self, initial: planned).start()
+        }
         OverlayApplication.runWithoutActivating()
+    }
+
+    /// `point --card`: arrow and card in one session; --duration limits the arrow, the card stays
+    /// until the human clicks its X.
+    func startCard(_ card: CardDocument, with planned: PlannedArrow) throws {
+        let target: CardReplyTarget = config.replyFile ? .file : .stdout
+        let session = try CardSession(document: card, base: planned, replyTarget: target, raise: false)
+        session.arrowLimit = config.duration
+        try session.start()
+    }
+
+    func render(_ planned: PlannedArrow, to png: String) throws -> Never {
+        var result = planned.result(pid: getpid())
+        let file = URL(fileURLWithPath: png)
+        result.image = try PNGExporter.write(planned.layout, sign: planned.sign, appearance: config.appearance, to: file)
+        Output.print(config.json ? JSONOutput.encode(result) : "bigarrow: wrote \(png)")
+        exit(0)
     }
 
     func plan(_ resolved: ResolvedTarget, screens: ScreenSpace) throws -> PlannedArrow {
         let display = try screens.display(containing: resolved.shape.anchor)
-        let sign = SignRenderer.render(text: config.text, appearance: config.appearance, display: display)
+        let sign = SignRenderer.render(text: config.sign, appearance: config.appearance, display: display)
         let request = OverlayLayout.Request(
             target: resolved.shape, display: display, signSize: sign.size,
             style: config.style, size: config.size, forced: config.forced, corners: config.corners, shape: config.shape,
@@ -83,7 +110,17 @@ struct PointRunner {
         } else {
             let after = result.dismissedAfter.map { Output.number(($0 * 10).rounded() / 10) } ?? "?"
             let reason = result.dismissedReason?.rawValue ?? "?"
-            Output.print("bigarrow: pointed at \(target) for \(after) s, dismissed by \(reason)")
+            let copied = result.copied.map { ", value copied \($0)x" } ?? ""
+            Output.print("bigarrow: pointed at \(target) for \(after) s, dismissed by \(reason)\(copied)")
         }
+    }
+}
+
+extension PointResult {
+    /// The detached child placed the sign itself; its copy chips move with it.
+    mutating func moveSign(to frame: [Double]) {
+        let (dx, dy) = (frame[0] - sign[0], frame[1] - sign[1])
+        copyButtons = copyButtons?.map { [$0[0] + dx, $0[1] + dy, $0[2], $0[3]] }
+        sign = frame
     }
 }

@@ -15,6 +15,8 @@ struct PointConfig {
     static let humanWaitDuration: Double = 300
 
     let target: TargetSpec
+    /// The sign with its `{{value}}` copy buttons; `text` is the same sentence without braces.
+    let sign: SignText
     let text: String
     let duration: Double
     let durationExplicit: Bool
@@ -43,6 +45,9 @@ struct PointConfig {
     let png: String?
     /// Set when the Peekaboo JSON came from stdin, so a detached child can be given a file.
     let stdinSnapshot: Data?
+    /// `--card`: a cue card shown with the arrow, its secrets already read.
+    let card: CardDocument?
+    let replyFile: Bool
 
     init(target options: TargetOptions, look: LookOptions, behaviour: BehaviourOptions, mode: PointMode) throws {
         self.mode = mode
@@ -50,7 +55,8 @@ struct PointConfig {
         let (target, stdinSnapshot) = try Self.target(options, app: home?.app)
         self.target = target
         self.stdinSnapshot = stdinSnapshot
-        text = look.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        sign = try SignText.parse(look.text.trimmingCharacters(in: .whitespacesAndNewlines))
+        text = sign.plain
         guard !text.isEmpty else { throw BigArrowError.badInput("--text must not be empty, write what the human should do") }
         forced = try ApproachDirection.parse(look.from)
         size = try ArrowSize.parse(look.size)
@@ -58,13 +64,14 @@ struct PointConfig {
         color = try ArrowColor.parse(look.color)
         corners = try SignCorners.parse(look.corners)
         shape = try ArrowShape.parse(look.shape)
-        noAnimation = look.noAnimation
-        border = try ArrowBorder.parse(look.border)
+        (noAnimation, border) = (look.noAnimation, try ArrowBorder.parse(look.border))
         tints = try Self.tints(look)
         click = try Self.click(behaviour)
         closeButton = behaviour.closeButton
         durationExplicit = behaviour.duration != nil
-        let waitsForHuman = click != .off || closeButton || mode == .background
+        card = try Self.card(behaviour, app: options.app ?? options.window, color: color, stdinTaken: stdinSnapshot != nil)
+        replyFile = behaviour.replyFile
+        let waitsForHuman = click != .off || closeButton || mode == .background || card != nil
         duration = behaviour.duration ?? (waitsForHuman ? Self.humanWaitDuration : Self.defaultDuration)
         guard duration >= 0, duration.isFinite else { throw BigArrowError.badInput("--duration must be 0 or more seconds") }
         (say, voice, json, dryRun) = (behaviour.say, behaviour.voice, behaviour.json, behaviour.dryRun)
@@ -81,6 +88,18 @@ struct PointConfig {
         for (path, tint) in tints { appearance[keyPath: path] = tint }
         appearance.closeMark = closeButton ? .cross : .none
         return appearance
+    }
+
+    /// The `--card`, in the arrow's colour and beside the target's app unless it names its own.
+    static func card(_ behaviour: BehaviourOptions, app: String?, color: ArrowColor, stdinTaken: Bool) throws -> CardDocument? {
+        guard let path = behaviour.card else { return nil }
+        guard !behaviour.follow, !behaviour.untilClick, !behaviour.untilAnyClick else {
+            throw BigArrowError.badInput("--card does not combine with --follow, --until-click or --until-any-click")
+        }
+        var card = try CardInput.load(path, stdinTaken: stdinTaken)
+        card.color = card.color ?? color.hex
+        card.app = card.app ?? app
+        return card
     }
 
     static func tints(_ look: LookOptions) throws -> [WritableKeyPath<SignAppearance, ArrowColor?>: ArrowColor] {

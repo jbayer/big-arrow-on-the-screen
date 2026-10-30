@@ -1,0 +1,41 @@
+{
+  "title": "Franz, log in to Hetzner",
+  "app": "Google Chrome",
+  "rows": [
+    {
+      "type": "field",
+      "label": "User",
+      "value": "franz@example.com",
+      "point": {
+        "element": "Email"
+      }
+    },
+    {
+      "type": "field",
+      "label": "Password",
+      "value": "correct horse battery staple",
+      "masked": true,
+      "point": {
+        "element": "Password"
+      }
+    },
+    {
+      "type": "link",
+      "label": "Console",
+      "url": "https://console.hetzner.cloud"
+    },
+    {
+      "type": "text",
+      "value": "The captcha is yours, I wait."
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "done",
+          "label": "I'm in"
+        }
+      ]
+    }
+  ]
+}

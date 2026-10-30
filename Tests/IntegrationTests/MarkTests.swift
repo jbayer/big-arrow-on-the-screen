@@ -12,7 +12,7 @@ struct MarkTests {
 
     func layers(_ style: ArrowStyle) throws -> (OverlayLayout, OverlayLayers) {
         let appearance = SignAppearance(color: try ArrowColor.parse("blue"), size: .medium, corners: .round)
-        let sign = SignRenderer.render(text: "Franz, click Save", appearance: appearance, display: display)
+        let sign = SignRenderer.render(text: try SignText.parse("Franz, click Save"), appearance: appearance, display: display)
         let target = CGRect(x: 1300, y: 120, width: 80, height: 28)
         let layout = OverlayLayout.plan(OverlayLayout.Request(
             target: .rect(target), display: display, signSize: sign.size, style: style, size: .medium, forced: nil

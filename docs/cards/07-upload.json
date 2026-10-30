@@ -1,0 +1,22 @@
+{
+  "title": "Franz, drag this file onto the upload field",
+  "rows": [
+    {
+      "type": "file",
+      "path": "docs/images/hero.png",
+      "point": {
+        "text": "Drop it here",
+        "element": "Upload"
+      }
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "uploaded",
+          "label": "Uploaded"
+        }
+      ]
+    }
+  ]
+}

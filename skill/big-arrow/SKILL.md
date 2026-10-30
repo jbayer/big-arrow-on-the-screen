@@ -1,6 +1,6 @@
 ---
 name: big-arrow
-description: "Point at something on the human's macOS screen with a big arrow and a sign (\"Franz, click HERE\") using the bigarrow CLI. Use whenever the human has to look at, click, type into or choose a specific spot, button, field, window, tab or menu: show me where, point to it, which button, where do I click, zeig mir wo, guide me through this UI, the human must approve or sign something, or you need the human's hand and they may not be looking at the terminal. Mandatory when it is time-critical: a code that expires, a login or payment page that times out, a build waiting on the human."
+description: "Point at something on the human's macOS screen with a big arrow and a sign (\"Franz, click HERE\"), and hand over values, secrets and questions on a floating cue card, using the bigarrow CLI. Use whenever the human has to look at, click, type into or choose a specific spot, button, field, window, tab or menu: show me where, point to it, which button, where do I click, zeig mir wo, guide me through this UI, the human must approve or sign something, or you need the human's hand and they may not be looking at the terminal; also to hand over credentials, a password, token, 2FA code, IBAN or command to paste, or to ask the human a question or a choice while they are away from the terminal. Mandatory when it is time-critical: a code that expires, a login or payment page that times out, a build waiting on the human."
 license: MIT
 allowed-tools: Bash(bigarrow:*)
 metadata:
@@ -9,25 +9,62 @@ metadata:
 
 # big-arrow
 
-`bigarrow` draws a big, click-through arrow with a sign. It never takes the focus and needs no
-permission to draw. Point at the thing itself; a line in the terminal is easy to miss.
+`bigarrow` draws a click-through arrow with a sign, needs no permission and never takes the
+focus. Point at the thing itself, a line in the terminal is easy to miss.
 
-## The one pattern
+Needs bigarrow 0.5.1 or newer. If `bigarrow --version` prints an older one, run
+`brew upgrade franzenzenhofer/tap/bigarrow` first: an old binary has no `card` and prints
+`{{value}}` as plain text.
 
 ```bash
-bigarrow start <target> --text "Franz, <exact action>"     # returns at once
-# ... watch for the result (page changed, job continued, file appeared) ...
-bigarrow stop                                               # the moment it is done
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
+bigarrow start --element "Ghostty" --app "System Settings" --text "Franz, switch this on: Ghostty may record your screen" --say
+# watch for the result (page changed, job continued, file appeared), then:
+bigarrow stop
 ```
 
-The arrow is tied to the app it points into: that app (window, tab) comes to the front first,
-and the arrow hides while another app covers the target and returns when it is visible again.
-It also ends by itself: after 300 s, when your agent session exits, and (with the hook below)
-when the human answers you. Still always `stop` it yourself the moment the step is done.
+## Rules
 
-The human can click the sign or the shaft to remove the arrow; clicks on the target pass
-through. So skip `--close-button` (it only adds an X to the sign) unless the human asks for one.
-A removed arrow means the human saw it: check the result, do not draw it again.
+- Open the exact pane or URL yourself, then point at the one control left for the human. Never
+  walk them through menus. The human clicks; you point.
+- The sign is one full sentence naming the action ("Franz, click Save", never "here"). When the
+  click approves, grants, pays, signs, sends or deletes, add what happens: "Franz, click Pay:
+  49 EUR to Hetzner". The human decides; the facts go on the sign, not only in the terminal.
+- `--say` when the human may not be looking. Time-critical (code expires, page times out, job
+  waits): `--color red --say` and say by when: "Franz, enter the 2FA code now, it expires in 60 s".
+- Something to paste (a command you may not run, a URL, a code): put it on the sign as
+  `{{value}}`. The human sees the value on a copy button (no braces); one click copies all of it
+  and the arrow stays. Point at where it goes: "Franz, copy {{sudo xcodebuild -license accept}}
+  and paste it here", then check that it was pasted.
+- One arrow per step; `bigarrow stop` the moment the step is done. Arrows also end alone: after
+  300 s, when your session exits, when the human answers (hook below).
+- A click on the sign or shaft, except a copy button, removes the arrow (target clicks pass
+  through). A removed arrow was seen: check the result, do not redraw. Skip `--close-button`
+  unless asked.
+
+## Cards: values, secrets, answers
+
+One value to paste: a `{{value}}` chip on the sign. Two or more values, any secret, or a question:
+a cue card, a floating window with copy buttons that never takes the focus.
+
+```bash
+bigarrow card --title "Franz, log in to Hetzner" --app "Google Chrome" --field "User=franz@example.com" \
+  --secret "Password=keychain:hetzner/franz" --link https://console.hetzner.cloud --button "done=I'm in"
+bigarrow wait          # blocks until an answer: {"result":"button","value":"done","copied":["User","Password"],...}
+```
+
+- Secrets never go on the command line (`ps` shows it to everyone): `--secret` takes a source,
+  `pass:`, `keychain:<service>/<account>`, `op:`, `env:`, `file:`, or put the value in a JSON card
+  on stdin. They show as dots, copy as concealed and leave the clipboard after 30 s.
+- `--ask "Question?"` (typed reply), `--choice id=Label` (2 to 6), `--button id=Label`. `wait`
+  exits 0 for an answer, 1 when the human closed the card without one: then ask in the terminal.
+- A card with questions closes itself once every question is answered (`--keep` keeps it until
+  the X); the reply's `answers` has them all. A card with only values stays until the human's X.
+  It survives your session and the prompt hook: close it yourself when it is no longer needed,
+  `bigarrow stop --pid <pid>` or `bigarrow stop --cards`.
+- A row can point: in a JSON card, `"point": {"element": "Password"}` aims the arrow at where that
+  value goes, and it moves on when the human copies the next one. `start ... --card card.json`
+  shows an arrow and a card together. Row types and JSON: [reference.md](reference.md#cards).
 
 ## Targets
 
@@ -38,62 +75,22 @@ A removed arrow means the human saw it: check the result, do not draw it again.
 | A spot inside a Chrome tab | `--rect x,y,w,h --app "Google Chrome:<tab title>"` |
 | A spot in a screenshot | `--at X,Y --app "<App>"` |
 
-- Always give `--app` (or `--window`) when the target is inside an app, so it is raised and bound.
-  `App:title` matches a window title, or else selects the tab with that title.
-- Inside a Chrome page, `--element` needs Chrome started with `--force-renderer-accessibility`.
-  Otherwise take the element's `getBoundingClientRect()` from Claude in Chrome and pass
-  `--rect (screenX + r.x),(screenY + outerHeight - innerHeight + r.y),r.width,r.height` (100 % zoom).
-- Coordinates are global top-left points. From `tinyscreenshot`: display origin + pixel x
-  (source width / output width). `--display N` makes them relative to display N.
-- Unsure? `bigarrow elements --app X --match "allow"`, or append `--dry-run` (draws nothing).
-
-## Open the place first, then point
-
-Never walk a human through menus you can open yourself. Open the exact pane or page, then point
-at the one control left to click:
-
-```bash
-open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
-bigarrow start --element "<control>" --app "System Settings" --text "Franz, switch this on: <app> may record your screen"
-```
-
-System Settings links verified on macOS 27, all `x-apple.systempreferences:` + one of:
-`com.apple.preference.security?Privacy_` + `Accessibility` (titled "Device Control and Data
-Access" on 27), `ScreenCapture`, `AllFiles`, `Automation`, `Camera`, `Microphone`, `ListenEvent`;
-`com.apple.LoginItems-Settings.extension`, `com.apple.preference.notifications`, `.displays`,
-`.keyboard`, `.network`, `.dock`, `.sound`, `com.apple.preferences.Bluetooth`,
-`com.apple.preferences.softwareupdate`. A wrong id does nothing and still exits 0, so check the
-window title. Web pages: open the URL itself, not the site's start page.
-
-## Time-critical (code expires, page times out, job waits)
-
-```bash
-bigarrow start --element "Verify" --app "Safari" --text "Franz, enter the 2FA code now, it expires in 60 s" --color red --say
-```
-
-Say what and by when. One arrow per step: `stop` before pointing at the next thing.
-
-## Sign and look
-
-Full short sentence ("Franz, click Save", not "here"). When the click approves, grants, pays,
-signs, sends or deletes something, the sign also says what happens: "Franz, click Allow: Ghostty
-may control your Mac", "Franz, click Pay: 49 EUR to Hetzner". The human decides; give them the
-facts on the sign, not only in the terminal. `--say` speaks it. `--color` red, orange,
-yellow, green, teal, blue, purple, pink, black, white or #hex. `--style box|ring` marks without
-covering, `--size S|M|L`, `--duration N` for a plain timed hint (default 8 s with `point`).
-Default look is a white border with a drop shadow; `--border white-black|black` and
-`--border-color`, `--text-color`, `--edge-color`, `--close-color`, `--close-x-color` change it.
-`--shape bend|straight|zigzag|spiral`: spiral loops once around the sign before it points.
+Always pass `--app` (or `--window`) for a target inside an app: it is raised first and the arrow
+hides while another app covers it. `App:title` matches a window title, else a tab. Coordinates
+are global top-left points. Inside a Chrome page `--element` needs Chrome started with
+`--force-renderer-accessibility`; otherwise convert `getBoundingClientRect()` to `--rect`
+([reference.md](reference.md)). Unsure? `bigarrow elements --app X --match "allow"` or `--dry-run`.
 
 ## Errors
 
-Exit 2 bad input, 3 target not found (the message lists what exists), 4 permission missing.
-On 4 run `bigarrow doctor` and read which permission the message names. Accessibility (for
-`--element`, `App:title`, `--until-click`) and Screen Recording (for `--window App:title`) belong to
-the app running your shell (Terminal, Ghostty, VS Code), not to bigarrow. Name that app and the
-pane the error names (on macOS 27 the Accessibility list is titled "Device Control and Data
-Access"), then open it for the human and point, as below.
+Exit 2 bad input, 3 target not found (the message lists what exists), 4 permission missing: run
+`bigarrow doctor`. Accessibility (`--element`, `App:title`, `--until-click`) and Screen Recording
+(`--window App:title`) belong to the app running your shell (Terminal, Ghostty, VS Code), never
+to bigarrow. Open the pane the error names (macOS 27: Accessibility is "Device Control and Data
+Access") and point at that app's switch.
 
-## Setup once: clear arrows when the human answers
+More (pane ids, look and timing flags): [reference.md](reference.md).
+
+## Setup once
 
 `~/.claude/settings.json`: `"hooks": {"UserPromptSubmit": [{"hooks": [{"type": "command", "command": "bigarrow stop --hook"}]}]}`

@@ -1,0 +1,10 @@
+{
+  "title": "Franz, one question while you are away",
+  "rows": [
+    {
+      "type": "input",
+      "id": "ip",
+      "label": "Which IP should the client whitelist?"
+    }
+  ]
+}

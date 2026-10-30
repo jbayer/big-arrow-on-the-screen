@@ -1,0 +1,33 @@
+{
+  "title": "Franz, approve this payment",
+  "color": "orange",
+  "rows": [
+    {
+      "type": "field",
+      "label": "Amount",
+      "value": "49.00 EUR"
+    },
+    {
+      "type": "field",
+      "label": "To",
+      "value": "Hetzner Online GmbH"
+    },
+    {
+      "type": "text",
+      "value": "Cloud server CX32, November 2026."
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "reject",
+          "label": "Reject"
+        },
+        {
+          "id": "approve",
+          "label": "Approve 49 EUR"
+        }
+      ]
+    }
+  ]
+}

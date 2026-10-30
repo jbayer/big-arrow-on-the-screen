@@ -6,7 +6,6 @@ class Bigarrow < Formula
   license "MIT"
   head "https://github.com/franzenzenhofer/big-arrow-on-the-screen.git", branch: "main"
 
-  depends_on xcode: ["16.0", :build]
   depends_on :macos
 
   def install

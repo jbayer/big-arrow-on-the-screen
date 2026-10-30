@@ -1,0 +1,32 @@
+{
+  "title": "Franz, submit the app for review",
+  "app": "Safari",
+  "rows": [
+    {
+      "type": "checklist",
+      "items": [
+        {
+          "id": "build",
+          "label": "Pick build 42",
+          "point": {
+            "element": "Build"
+          }
+        },
+        {
+          "id": "notes",
+          "label": "Paste the release notes",
+          "point": {
+            "element": "What's New"
+          }
+        },
+        {
+          "id": "submit",
+          "label": "Click Add for Review",
+          "point": {
+            "element": "Add for Review"
+          }
+        }
+      ]
+    }
+  ]
+}

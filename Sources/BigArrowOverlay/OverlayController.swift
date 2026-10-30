@@ -10,7 +10,13 @@ public final class OverlayController {
     private let mode: AnimationMode
     private let appearance: SignAppearance
     private var tracker: ClickTracker?
+    private var region: ClickRegion?
+    private var sign: SignImage?
     private var onClick: (@MainActor () -> Void)?
+    private var onCopy: (@MainActor (String) -> Void)?
+
+    /// How long a copy chip shows the check after a click.
+    static let copiedFeedback: TimeInterval = 1.5
 
     public init(mode: AnimationMode, appearance: SignAppearance) {
         self.mode = mode
@@ -22,6 +28,11 @@ public final class OverlayController {
         onClick = handler
     }
 
+    /// A click on a copy chip puts its value on the clipboard, keeps the arrow and runs `handler`.
+    public func onCopy(_ handler: @escaping @MainActor (String) -> Void) {
+        onCopy = handler
+    }
+
     /// Shows the layout on its display. The panel is reused while the display stays the same.
     public func show(_ layout: OverlayLayout, sign: SignImage, animated: Bool) throws {
         guard let screen = ScreenReader.screen(for: layout.display) else {
@@ -29,7 +40,7 @@ public final class OverlayController {
         }
         if panel == nil || self.layout?.display != layout.display {
             panel?.orderOut(nil)
-            panel = OverlayPanel(screen: screen) { [weak self] in self?.onClick?() }
+            panel = OverlayPanel(screen: screen) { [weak self] point in self?.clicked(at: point) }
         }
         let layers = OverlayLayers(layout: layout, sign: sign, appearance: appearance)
         CATransaction.begin()
@@ -39,11 +50,38 @@ public final class OverlayController {
         if animated { Animator.enter(layers, mode: mode) }
         self.layers = layers
         self.layout = layout
+        self.sign = sign
         panel?.orderFrontRegardless()
         tracker?.stop()
+        let region = ClickRegion(layout: layout, flip: layers.flip, copyButtons: sign.copyButtons.map(\.rect))
+        self.region = region
         if let panel, onClick != nil {
-            tracker = ClickTracker(panel: panel, root: layers.root, region: ClickRegion(layout: layout, flip: layers.flip))
+            tracker = ClickTracker(panel: panel, root: layers.root, region: region)
         }
+    }
+
+    /// A chip copies; anywhere else on the sign or the shaft ends the arrow.
+    func clicked(at point: CGPoint) {
+        guard let index = region?.copyButton(at: point), let button = sign?.copyButtons[index] else {
+            onClick?()
+            return
+        }
+        copy(button)
+    }
+
+    /// Puts the value on the general pasteboard (no permission needed) and shows the check.
+    func copy(_ button: CopyButton) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(button.value, forType: .string)
+        guard let text = layers?.signText, let plain = sign?.text else { return }
+        text.contents = button.copiedText
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.copiedFeedback) {
+            MainActor.assumeIsolated {
+                if text.contents as AnyObject === button.copiedText { text.contents = plain }
+            }
+        }
+        onCopy?(button.value)
     }
 
     /// Display-local top-left rect to AppKit screen coordinates (bottom-left of the primary display).

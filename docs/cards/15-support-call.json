@@ -1,0 +1,19 @@
+{
+  "title": "Franz, call Hetzner support",
+  "rows": [
+    {
+      "type": "field",
+      "label": "Phone",
+      "value": "+49 9831 505-0"
+    },
+    {
+      "type": "field",
+      "label": "Customer number",
+      "value": "K0123456789"
+    },
+    {
+      "type": "text",
+      "value": "1. Server 91.99.153.175 lost its IPv6 at 03:12 UTC.\n2. Ask them to check the router in FSN1.\n3. Ask for a ticket number."
+    }
+  ]
+}

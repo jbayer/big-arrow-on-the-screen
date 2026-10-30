@@ -5,7 +5,7 @@ import BigArrowCore
 /// on every Space. Recipe from Apple DTS: https://developer.apple.com/forums/thread/826308
 @MainActor
 final class OverlayPanel: NSPanel {
-    init(screen: NSScreen, onClick: @escaping @MainActor () -> Void) {
+    init(screen: NSScreen, onClick: @escaping @MainActor (CGPoint) -> Void) {
         super.init(
             contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered, defer: false
@@ -31,15 +31,16 @@ final class OverlayPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
-/// Receives the click while `ClickTracker` has made the panel clickable; never activates the app.
+/// Receives the click while `ClickTracker` has made the panel clickable, with its location in the
+/// panel's bottom-left points; never activates the app.
 @MainActor
 final class ClickView: NSView {
-    var onClick: (@MainActor () -> Void)?
+    var onClick: (@MainActor (CGPoint) -> Void)?
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     override func mouseDown(with event: NSEvent) {
-        onClick?()
+        onClick?(convert(event.locationInWindow, from: nil))
     }
 }
 

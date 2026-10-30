@@ -1,0 +1,23 @@
+{
+  "title": "Franz, does your phone show this code?",
+  "rows": [
+    {
+      "type": "field",
+      "label": "Code on this Mac",
+      "value": "7 4 1 9"
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "mismatch",
+          "label": "No, different"
+        },
+        {
+          "id": "match",
+          "label": "Yes, same"
+        }
+      ]
+    }
+  ]
+}

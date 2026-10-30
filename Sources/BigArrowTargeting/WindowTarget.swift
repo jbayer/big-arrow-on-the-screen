@@ -8,6 +8,19 @@ import BigArrowCore
 @MainActor
 public enum WindowTarget {
     public static func resolve(_ query: WindowQuery, anchor: WindowAnchor, screens: ScreenSpace) throws -> ResolvedTarget {
+        let (window, detail) = try find(query, screens: screens)
+        var described = detail
+        described["anchor"] = anchor.rawValue
+        let point = anchor.point(in: WindowMatcher.visiblePart(of: window, on: screens.displays))
+        return ResolvedTarget(shape: .point(point), source: "window", detail: described)
+    }
+
+    /// The visible part of the app's front window (a card sits beside it).
+    public static func frame(_ query: WindowQuery, screens: ScreenSpace) throws -> CGRect {
+        WindowMatcher.visiblePart(of: try find(query, screens: screens).window, on: screens.displays)
+    }
+
+    static func find(_ query: WindowQuery, screens: ScreenSpace) throws -> (window: WindowInfo, detail: [String: String]) {
         let apps = runningApps()
         let windows = onScreenWindows()
         let matchedApps = WindowMatcher.apps(matching: query.app, in: apps)
@@ -24,10 +37,9 @@ public enum WindowTarget {
             let what = query.title.map { "no window titled '*\($0)*'" } ?? "no visible window"
             throw BigArrowError.unresolvable("\(appName) has \(what) on screen")
         }
-        var detail = ["app": appName, "anchor": anchor.rawValue, "windowCount": String(found.count)]
+        var detail = ["app": appName, "windowCount": String(found.count)]
         detail["title"] = window.title
-        let point = anchor.point(in: WindowMatcher.visiblePart(of: window, on: screens.displays))
-        return ResolvedTarget(shape: .point(point), source: "window", detail: detail)
+        return (window, detail)
     }
 
     /// Every running app with its pid, name and bundle id.

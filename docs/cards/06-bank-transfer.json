@@ -1,0 +1,46 @@
+{
+  "title": "Franz, make this transfer in George",
+  "rows": [
+    {
+      "type": "field",
+      "label": "IBAN",
+      "value": "AT61 1904 3002 3457 3201",
+      "point": {
+        "element": "IBAN"
+      }
+    },
+    {
+      "type": "field",
+      "label": "BIC",
+      "value": "BKAUATWWXXX",
+      "point": {
+        "element": "BIC"
+      }
+    },
+    {
+      "type": "field",
+      "label": "Amount",
+      "value": "1250.00",
+      "point": {
+        "element": "Amount"
+      }
+    },
+    {
+      "type": "field",
+      "label": "Reference",
+      "value": "Invoice 2026-114",
+      "point": {
+        "element": "Reference"
+      }
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "paid",
+          "label": "Paid"
+        }
+      ]
+    }
+  ]
+}

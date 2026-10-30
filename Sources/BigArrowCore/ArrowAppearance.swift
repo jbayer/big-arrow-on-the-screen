@@ -110,6 +110,12 @@ public struct ArrowColor: Equatable, Sendable, Codable {
         CGColor(srgbRed: red, green: green, blue: blue, alpha: 1)
     }
 
+    /// `#RRGGBB`, which `parse` reads back.
+    public var hex: String {
+        let byte = { (value: CGFloat) in Int((value * 255).rounded()) }
+        return String(format: "#%02X%02X%02X", byte(red), byte(green), byte(blue))
+    }
+
     /// Rec. 709 luma of the sRGB values, good enough to pick a readable contrast colour.
     public var luminance: CGFloat { 0.2126 * red + 0.7152 * green + 0.0722 * blue }
 

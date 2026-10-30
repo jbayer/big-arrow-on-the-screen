@@ -1,0 +1,36 @@
+{
+  "title": "Franz, send this email?",
+  "rows": [
+    {
+      "type": "field",
+      "label": "To",
+      "value": "office@example.at"
+    },
+    {
+      "type": "field",
+      "label": "Subject",
+      "value": "Invoice 2026-114"
+    },
+    {
+      "type": "text",
+      "value": "Hello,\n\nattached is invoice 2026-114 for October.\n\nLg\nClaude Code Assistant for Franz AI"
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "cancel",
+          "label": "Cancel"
+        },
+        {
+          "id": "edit",
+          "label": "Edit"
+        },
+        {
+          "id": "send",
+          "label": "Send"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Franz, enter the 2FA code now",
+  "rows": [
+    {
+      "type": "totp",
+      "label": "Google Authenticator code",
+      "value": "JBSWY3DPEHPK3PXP",
+      "point": {
+        "element": "Enter code"
+      }
+    },
+    {
+      "type": "text",
+      "value": "The page times out in **60 s**."
+    }
+  ]
+}

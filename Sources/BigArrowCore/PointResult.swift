@@ -27,6 +27,10 @@ public struct PointResult: Codable, Sendable {
     public var dryRun = false
     public var dismissedAfter: Double?
     public var dismissedReason: DismissReason?
+    /// Every `{{value}}` copy chip in the sign, global top-left points: x, y, width, height.
+    public var copyButtons: [[Double]]?
+    /// How often the human clicked a copy button in the sign; nil when never.
+    public var copied: Int?
     /// With `--png`: the image's top-left corner in global points and its pixels per point.
     public var image: [Double]?
 

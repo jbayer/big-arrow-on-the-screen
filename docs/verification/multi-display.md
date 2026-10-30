@@ -32,14 +32,11 @@ screen tests on. **Arthur** = Arthur Mac (macOS 27.0.1), `BIGARROW_SCREEN_TESTS=
 
 ## Notes
 
-- On GitHub's virtual machines `CGWindowListCopyWindowInfo` reported a window at `y = -252`
-  while Accessibility and the screenshot had it at `y = 124` (see the addendum in
-  `docs/research/2026-10-08-macos-overlay-apis-and-prior-art.md`). `--follow` is therefore
-  checked through an `--element` target there; it is the same follow code for windows and
-  elements. On real Macs both sources agree.
-- On the runner, AppKit reports backing scale 1 for the virtual display even in its 2x pixel
-  mode; scale 2 is covered by the MacBook's built-in display.
-- Arthur Mac: the first run happened while its screen was locked (window-server checks only).
-  After Franz unlocked it, all 74 tests ran through Ghostty (Accessibility and Screen
-  Recording granted) with no skips, including the pixel check and the live `--element` test,
-  and the README scenes were recorded there (`scripts/funny-scenes.sh` with `--cover`).
+- On GitHub's VMs `CGWindowListCopyWindowInfo` put a window at `y = -252`, Accessibility and the
+  screenshot at `y = 124` (addendum in `docs/research/2026-10-08-macos-overlay-apis-and-prior-art.md`),
+  so `--follow` is checked through `--element` there (same follow code). On real Macs both agree.
+- The runner's virtual display reports backing scale 1 even in 2x mode; scale 2 is covered by the
+  MacBook's built-in display.
+- Arthur Mac: the first run was on a locked screen (window-server checks only). Unlocked, all 74
+  tests (as of 2026-10-08) ran through Ghostty with no skips, and the README scenes were recorded
+  there (`scripts/funny-scenes.sh --cover`).

@@ -28,9 +28,10 @@ struct BigArrowProcess {
     }
 
     /// Runs to completion and captures both streams.
-    static func run(_ arguments: [String], stdin: Data? = nil) throws -> Result {
+    static func run(_ arguments: [String], stdin: Data? = nil, cwd: URL? = nil) throws -> Result {
         let process = Process()
         process.executableURL = try executable
+        process.currentDirectoryURL = cwd
         process.arguments = arguments
         let out = Pipe()
         let err = Pipe()
@@ -54,6 +55,9 @@ struct BigArrowProcess {
             seconds: Date().timeIntervalSince(start)
         )
     }
+
+    /// The repository's root, for files like docs/cards.
+    static let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
 
     /// The fixtures of the unit tests, shared so both suites read the same recordings.
     static func fixture(_ name: String) -> String {

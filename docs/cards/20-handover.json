@@ -1,0 +1,24 @@
+{
+  "title": "Good morning Franz, here is what I did",
+  "color": "green",
+  "rows": [
+    {
+      "type": "text",
+      "value": "Deployed **droplis.lalo.li** and checked it over HTTPS. All tests green."
+    },
+    {
+      "type": "link",
+      "label": "Release",
+      "url": "https://github.com/franzenzenhofer/big-arrow-on-the-screen/releases"
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "ok",
+          "label": "Got it"
+        }
+      ]
+    }
+  ]
+}

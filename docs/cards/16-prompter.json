@@ -1,0 +1,23 @@
+{
+  "title": "Workshop: slide 12 of 30",
+  "color": "purple",
+  "rows": [
+    {
+      "type": "text",
+      "value": "**Say:** INP replaced FID in March 2024. Show the field data first, then the lab trace."
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "back",
+          "label": "Back"
+        },
+        {
+          "id": "next",
+          "label": "Next"
+        }
+      ]
+    }
+  ]
+}

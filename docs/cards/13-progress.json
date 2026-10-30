@@ -1,0 +1,20 @@
+{
+  "title": "Deploying droplis.lalo.li",
+  "color": "blue",
+  "rows": [
+    {
+      "type": "progress",
+      "value": "Step 4 of 7: uploading assets, about 3 min left",
+      "progress": 0.57
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "cancel",
+          "label": "Cancel the deploy"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Franz, the build failed",
+  "color": "red",
+  "rows": [
+    {
+      "type": "text",
+      "value": "`swift test`: 2 of 214 tests failed in CopyButtonTests."
+    },
+    {
+      "type": "code",
+      "value": "CopyButtonTests.swift:41: expectation failed: chip leaves the sign"
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "ignore",
+          "label": "Ignore"
+        },
+        {
+          "id": "log",
+          "label": "Open log"
+        },
+        {
+          "id": "retry",
+          "label": "Retry"
+        }
+      ]
+    }
+  ]
+}

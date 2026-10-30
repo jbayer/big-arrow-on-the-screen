@@ -1,9 +1,8 @@
 # virtual-display
 
-Test helper that adds a temporary virtual display, so multi-display behaviour of `bigarrow` can be
-checked on a Mac with only its built-in screen. It uses the private CoreGraphics classes
-`CGVirtualDisplayDescriptor`, `CGVirtualDisplaySettings`, `CGVirtualDisplayMode` and `CGVirtualDisplay`
-(macOS 11+). This is a test tool only. It is not part of the shipped CLI.
+Test helper that adds a temporary virtual display, so multi-display behaviour can be checked on a
+Mac with one screen. Private CoreGraphics classes (`CGVirtualDisplay` and friends, macOS 11+).
+Test tool only, not part of the shipped CLI.
 
 ## Build
 
@@ -13,8 +12,7 @@ scripts/virtual-display/build.sh
 # -> scripts/virtual-display/.build/list-displays
 ```
 
-This is plain `swiftc` (Swift 6 language mode). The private interfaces come in through
-`-import-objc-header CGVirtualDisplayPrivate.h`, so no Xcode project and no SwiftPM are needed.
+Plain `swiftc` (Swift 6) with `-import-objc-header CGVirtualDisplayPrivate.h`; no Xcode, no SwiftPM.
 
 ## Run
 
@@ -23,16 +21,14 @@ virtual-display --width 1920 --height 1080 --hidpi 0 --seconds 8 [--origin x,y]
 ```
 
 - `--width/--height`: the logical size in points. With `--hidpi 1`, the backing mode is 2x in pixels.
-- `--origin x,y`: the top-left corner in global top-left points (main display at 0,0). For example,
-  `--origin 0,-1080` puts the display above the main display. By default it goes to the right of the
-  main display. macOS may snap the origin so the displays touch, so trust the printed frame and not
-  the value you passed in.
-- Once the display is active, extended (not mirrored) and the previous main display is still main,
-  it prints one JSON line to stdout. The frame comes from `CGDisplayBounds`:
+- `--origin x,y`: top-left corner in global top-left points (`0,-1080` = above main). Default: right
+  of main. macOS may snap it, so trust the printed frame.
+- Once the display is up, extended and the old main is still main, it prints one JSON line
+  (`CGDisplayBounds`):
   `{"displayID":6,"frame":{"x":1512,"y":0,"width":1920,"height":1080}}`
-- It lives for `--seconds`, or until SIGINT/SIGTERM/SIGHUP, and then exits. Diagnostics go to stderr.
-- It fails hard (exit 1, with the reason on stderr) if the display does not come up, if the
-  requested mode does not exist, or if the layout does not settle within 5 seconds.
+- Lives for `--seconds` or until SIGINT/SIGTERM/SIGHUP. Diagnostics on stderr.
+- Fails hard (exit 1) if the display does not come up, the mode does not exist, or the layout does
+  not settle within 5 s.
 
 Smoke test (always in the foreground, with a timeout):
 
@@ -47,26 +43,20 @@ $D/list-displays                            # expect 1 display again
 
 ## Safety
 
-- Every display change is one transaction finished with `CGCompleteDisplayConfiguration(config, .forSession)`.
-  The code never uses `kCGConfigurePermanently`.
-- On this machine, macOS brought the new display up as the **mirror master and main display**:
-  the built-in screen hardware-mirrored it for a moment. In the same session-only transaction, the
-  helper breaks every mirror that involves the new display, keeps the previous main display at (0,0)
-  (the display at the origin is the main one) and places the virtual display. Expect one short flash
-  on the real screen when it starts.
-- The display is removed when the process exits, because its window-server connection closes.
-  When `CGVirtualDisplay` was released inside the still-running process, the display had not
-  disappeared after 5 s, so the helper releases it and then exits. Killing it with SIGKILL also
-  removes it, because removal comes from the process ending.
+- Every change is one `CGCompleteDisplayConfiguration(config, .forSession)` transaction, never
+  `kCGConfigurePermanently`.
+- macOS brought the new display up as **mirror master and main display**. In the same session-only
+  transaction the helper breaks those mirrors, keeps the old main at (0,0) and places the virtual
+  display. Expect one short flash on the real screen.
+- The display goes away when the process exits (its window-server connection closes), even on
+  SIGKILL. Releasing `CGVirtualDisplay` in a running process did not remove it within 5 s.
 
 ## Caveats
 
-- The API is private and undocumented, so it can change with any macOS release.
-- No TCC permission is needed to create the display or to read `CGDisplayBounds`/`NSScreen`.
-  Screen Recording only matters if you want to capture the virtual display's pixels (DeskPad
-  does that with `CGDisplayStream`). It is a blank framebuffer that nobody can see.
-- `--hidpi 1` follows the pixel-doubled mode approach that hidpi-mirror uses, and it picks the mode
-  whose `pixelWidth == 2 * width`. This path compiles, but it has not been run yet.
+- Private, undocumented API: may change with any macOS release.
+- No TCC permission needed. Screen Recording only matters to capture its pixels (DeskPad uses
+  `CGDisplayStream`); it is a blank framebuffer nobody sees.
+- `--hidpi 1` picks the mode with `pixelWidth == 2 * width`, as hidpi-mirror does.
 
 ## Sources (read for this helper)
 

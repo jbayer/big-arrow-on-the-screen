@@ -1,0 +1,22 @@
+{
+  "title": "Franz, run this in your terminal",
+  "rows": [
+    {
+      "type": "code",
+      "value": "sudo xcodebuild -license accept"
+    },
+    {
+      "type": "text",
+      "value": "I may not run `sudo`. Paste it, type your Mac password, then press the button."
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "id": "ran",
+          "label": "I ran it"
+        }
+      ]
+    }
+  ]
+}

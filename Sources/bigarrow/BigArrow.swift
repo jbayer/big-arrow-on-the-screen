@@ -9,12 +9,13 @@ struct BigArrow: ParsableCommand {
         abstract: "Point at something on the screen with a big arrow and a sign. Click-through, gone by itself.",
         discussion: """
         Coordinates are global top-left logical points (what Accessibility, CGWindowList and \
-        Peekaboo report). Exit codes: 0 ok, 2 bad input, 3 target unresolvable, 4 permission missing.
+        Peekaboo report). Exit codes: 0 ok, 1 card ended without an answer, 2 bad input, 3 target \
+        unresolvable, 4 permission missing.
         """,
         version: "bigarrow \(BigArrowVersion.current)",
         subcommands: [
-            PointCommand.self, StartCommand.self, ClearCommand.self, FrontCommand.self, ElementsCommand.self,
-            DoctorCommand.self, DemoCommand.self, InstallSkillCommand.self
+            PointCommand.self, StartCommand.self, CardCommand.self, WaitCommand.self, ClearCommand.self, FrontCommand.self,
+            ElementsCommand.self, DoctorCommand.self, DemoCommand.self, InstallSkillCommand.self, ClipboardGuardCommand.self
         ]
     )
 

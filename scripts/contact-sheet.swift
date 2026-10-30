@@ -15,7 +15,8 @@ let items = arguments.dropFirst(4).map { entry -> (NSImage, String) in
     return (image, parts.count > 1 ? parts[1] : "")
 }
 let width = CGFloat(cellWidth)
-let height = width * 0.62
+// CELL_ASPECT: cell height as a share of its width (default 0.62; tall cue cards need more).
+let height = width * (Double(ProcessInfo.processInfo.environment["CELL_ASPECT"] ?? "") ?? 0.62)
 let caption: CGFloat = 26
 let rows = (items.count + columns - 1) / columns
 let size = NSSize(width: width * CGFloat(columns), height: (height + caption) * CGFloat(rows))

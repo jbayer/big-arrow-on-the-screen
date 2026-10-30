@@ -1,0 +1,25 @@
+{
+  "title": "Franz, which header do you want?",
+  "rows": [
+    {
+      "type": "choice",
+      "items": [
+        {
+          "id": "dark",
+          "label": "Dark header",
+          "detail": "White logo on near-black, like the app"
+        },
+        {
+          "id": "light",
+          "label": "Light header",
+          "detail": "Black logo on white, more space for the menu"
+        },
+        {
+          "id": "photo",
+          "label": "Photo header",
+          "detail": "Full-width photo, title on top"
+        }
+      ]
+    }
+  ]
+}

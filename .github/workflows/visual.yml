@@ -36,6 +36,11 @@ jobs:
       - name: Behaviour (clicks, follow, raise, say, second display)
         run: scripts/behaviour-check.sh visual-out/behaviour
         timeout-minutes: 10
+      - name: Cue cards (clicks, typing, clipboard, secrets, lifetimes, arrows)
+        run: scripts/card-check.sh .build/release/bigarrow visual-out/cards
+        timeout-minutes: 6
+      - name: Cue card gallery (the 20 use cases, offscreen)
+        run: scripts/card-gallery.py .build/release/bigarrow visual-out/card-gallery
       - name: Look over six backgrounds (outline, shadow, close button, colours)
         run: scripts/look-check.sh visual-out/look
         timeout-minutes: 8

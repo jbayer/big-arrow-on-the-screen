@@ -1,0 +1,13 @@
+{
+  "title": "Franz, open this on your phone",
+  "rows": [
+    {
+      "type": "qr",
+      "value": "https://droplis.lalo.li"
+    },
+    {
+      "type": "link",
+      "url": "https://droplis.lalo.li"
+    }
+  ]
+}
