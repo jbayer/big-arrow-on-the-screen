@@ -12,9 +12,10 @@ metadata:
 `bigarrow` draws a click-through arrow with a sign, needs no permission and never takes the
 focus. Point at the thing itself, a line in the terminal is easy to miss.
 
-Needs bigarrow 0.5.1 or newer. If `bigarrow --version` prints an older one, run
-`brew upgrade franzenzenhofer/tap/bigarrow` first: an old binary has no `card` and prints
-`{{value}}` as plain text.
+Needs bigarrow 0.5.1 or newer. If `bigarrow --version` prints an older one, upgrade the Flox
+environment that installs `jbayer/bigarrow` first (`flox upgrade -r jbayer/default bigarrow`,
+or `flox upgrade bigarrow` inside a project environment): an old binary has no `card` and
+prints `{{value}}` as plain text.
 
 ```bash
 open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
