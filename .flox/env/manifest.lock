@@ -16,7 +16,7 @@
     },
     "build": {
       "bigarrow": {
-        "command": "  /usr/bin/swift build --disable-sandbox --configuration release\n  mkdir -p \"$out/bin\" \"$out/share/bigarrow/skill\"\n  cp \"$(/usr/bin/swift build --configuration release --show-bin-path)/bigarrow\" \"$out/bin/\"\n  cp -R skill/big-arrow \"$out/share/bigarrow/skill/\"\n",
+        "command": "  /usr/bin/swift build --disable-sandbox --configuration release\n  mkdir -p \"$out/bin\" \"$out/libexec/bigarrow\" \"$out/share/bigarrow/skill\"\n  cp \"$(/usr/bin/swift build --configuration release --show-bin-path)/bigarrow\" \"$out/libexec/bigarrow/\"\n  printf '#!/bin/sh\\nexec \"%s/libexec/bigarrow/bigarrow\" \"$@\"\\n' \"$out\" > \"$out/bin/bigarrow\"\n  chmod +x \"$out/bin/bigarrow\"\n  cp -R skill/big-arrow \"$out/share/bigarrow/skill/\"\n",
         "runtime-packages": [],
         "version": {
           "command": "sed -n 's/.*current = \"\\(.*\\)\"/\\1/p' Sources/BigArrowCore/BigArrowVersion.swift"
