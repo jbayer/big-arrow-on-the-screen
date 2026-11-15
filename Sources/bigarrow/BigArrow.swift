@@ -14,7 +14,8 @@ struct BigArrow: ParsableCommand {
         """,
         version: "bigarrow \(BigArrowVersion.current)",
         subcommands: [
-            PointCommand.self, StartCommand.self, CardCommand.self, WaitCommand.self, ClearCommand.self, FrontCommand.self,
+            PointCommand.self, StartCommand.self, CardCommand.self, WaitCommand.self, ConfettiCommand.self,
+            ClearCommand.self, FrontCommand.self,
             ElementsCommand.self, DoctorCommand.self, DemoCommand.self, InstallSkillCommand.self, ClipboardGuardCommand.self
         ]
     )

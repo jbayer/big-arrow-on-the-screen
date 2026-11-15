@@ -31,6 +31,7 @@ struct PointConfig {
     /// Optional colours of border, text, thin edge and X button; nil picks one automatically.
     let tints: [WritableKeyPath<SignAppearance, ArrowColor?>: ArrowColor]
     let say: Bool
+    let confetti: Bool
     let voice: String?
     let follow: Bool
     let click: ClickDismissal
@@ -74,7 +75,7 @@ struct PointConfig {
         let waitsForHuman = click != .off || closeButton || mode == .background || card != nil
         duration = behaviour.duration ?? (waitsForHuman ? Self.humanWaitDuration : Self.defaultDuration)
         guard duration >= 0, duration.isFinite else { throw BigArrowError.badInput("--duration must be 0 or more seconds") }
-        (say, voice, json, dryRun) = (behaviour.say, behaviour.voice, behaviour.json, behaviour.dryRun)
+        (say, voice, json, dryRun, confetti) = (behaviour.say, behaviour.voice, behaviour.json, behaviour.dryRun, behaviour.confetti)
         detach = behaviour.detach || mode == .background
         png = behaviour.png
         raise = home != nil && !options.noRaise
