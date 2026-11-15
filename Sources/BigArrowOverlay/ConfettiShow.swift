@@ -3,7 +3,7 @@ import BigArrowCore
 import QuartzCore
 
 /// Confetti over whole displays, in the same click-through, non-activating panels as the arrow.
-/// Core Animation's particle emitter does the work in the render server; the show ends by itself
+/// Core Animation's particle emitters do the work in the render server; the show ends by itself
 /// after its duration, so it can never outlive the process that started it.
 @MainActor
 public final class ConfettiShow {
@@ -15,7 +15,7 @@ public final class ConfettiShow {
     /// The window-server numbers of the confetti panels, for tests.
     public var windowNumbers: [Int] { panels.map(\.windowNumber) }
 
-    /// Starts confetti on every display and calls `completion` once the last piece is gone.
+    /// Starts confetti on every display and calls `completion` once the time is up.
     public func start(on displays: [Display], duration: TimeInterval, completion: @escaping @MainActor () -> Void) throws {
         let plans = try displays.map { try ConfettiPlan(display: $0.frame.size, duration: duration) }
         for (display, plan) in zip(displays, plans) {
@@ -23,11 +23,14 @@ public final class ConfettiShow {
                 throw BigArrowError.unresolvable("display \(display.index + 1) is no longer connected")
             }
             let panel = OverlayPanel(screen: screen) { _ in }
-            let emitter = ConfettiEmitter.make(plan, scale: display.scale)
-            panel.contentView?.layer?.addSublayer(emitter)
+            let images = ConfettiEmitter.images(scale: display.scale)
+            for source in plan.sources {
+                let emitter = ConfettiEmitter.make(source, size: plan.size, images: images, scale: display.scale)
+                panel.contentView?.layer?.addSublayer(emitter)
+                after(source.burst) { emitter.birthRate = 0 }
+            }
             panel.orderFrontRegardless()
             panels.append(panel)
-            after(plan.burst) { emitter.birthRate = 0 }
         }
         after(max(duration - Self.fadeOut, 0)) { self.fade() }
         after(duration) {
@@ -42,7 +45,7 @@ public final class ConfettiShow {
         }
     }
 
-    /// Ends the show at once, for an arrow that is dismissed while confetti still falls.
+    /// Ends the show at once.
     public func close() {
         for panel in panels {
             panel.orderOut(nil)
@@ -56,56 +59,61 @@ public final class ConfettiShow {
     }
 }
 
-/// The particle emitter: a line just above the display's top edge, wider than the display so the
-/// corners get confetti too, raining one cell per colour and shape.
+/// One particle emitter per source, one cell per colour and shape.
 @MainActor
 enum ConfettiEmitter {
-    static func make(_ plan: ConfettiPlan, scale: CGFloat) -> CAEmitterLayer {
+    static func make(_ source: ConfettiSource, size: CGSize, images: [(ConfettiPiece, CGImage)], scale: CGFloat) -> CAEmitterLayer {
         let layer = CAEmitterLayer()
-        layer.frame = CGRect(origin: .zero, size: plan.size)
-        // The content view is not flipped: y grows upwards, so the top edge is at `height`.
-        layer.emitterPosition = CGPoint(x: plan.size.width / 2, y: plan.size.height + 30)
-        layer.emitterSize = CGSize(width: plan.size.width * 1.1, height: 1)
-        layer.emitterShape = .line
+        layer.frame = CGRect(origin: .zero, size: size)
+        // The content view is not flipped: y grows upwards, as the plan's positions do.
+        layer.emitterPosition = source.position
+        layer.emitterSize = CGSize(width: max(source.width, 1), height: 1)
+        layer.emitterShape = source.width > 0 ? .line : .point
         layer.renderMode = .unordered
         // Without this the emitter back-fills its age since the layer's creation in one clump.
         layer.beginTime = CACurrentMediaTime()
-        let pieces = ConfettiPiece.allCases.map { ($0, image($0, scale: scale)) }
+        let rate = Float(source.piecesPerSecond) / Float(ConfettiPlan.colors.count * images.count)
         layer.emitterCells = ConfettiPlan.colors.flatMap { color in
-            pieces.map { cell($0.1, color: color, plan: plan, scale: scale) }
+            images.map { piece, image in
+                let cell = cell(image, color: color, source: source, scale: scale)
+                cell.birthRate = rate
+                // Strips flutter fast, squares turn, dots barely spin.
+                cell.spinRange = piece == .strip ? 14 : piece == .square ? 8 : 2
+                return cell
+            }
         }
         return layer
     }
 
-    static func cell(_ image: CGImage, color: ArrowColor, plan: ConfettiPlan, scale: CGFloat) -> CAEmitterCell {
+    static func cell(_ image: CGImage, color: ArrowColor, source: ConfettiSource, scale: CGFloat) -> CAEmitterCell {
         let cell = CAEmitterCell()
         cell.contents = image
         cell.contentsScale = scale
         cell.color = color.cgColor
-        cell.birthRate = plan.birthRatePerCell
-        cell.lifetime = Float(plan.lifetime)
-        cell.velocity = ConfettiPlan.initialSpeed
-        cell.velocityRange = ConfettiPlan.initialSpeed * 0.6
-        cell.emissionLongitude = -.pi / 2
-        cell.emissionRange = .pi / 4
-        cell.yAcceleration = -ConfettiPlan.gravity
-        cell.xAcceleration = 0
+        cell.lifetime = Float(source.lifetime)
+        cell.velocity = source.speed
+        cell.velocityRange = source.speed * ConfettiSource.speedRange
+        cell.emissionLongitude = source.angle
+        cell.emissionRange = source.spread
+        cell.yAcceleration = -source.gravity
         cell.spin = 2
-        cell.spinRange = 9
         cell.scaleRange = 0.35
         return cell
     }
 
-    /// A white piece; the cell's colour tints it.
-    static func image(_ piece: ConfettiPiece, scale: CGFloat) -> CGImage {
-        let rect = CGRect(origin: .zero, size: piece.size)
-        return Canvas(size: piece.size, scale: scale).render { context in
-            context.setFillColor(CGColor(gray: 1, alpha: 1))
-            switch piece {
-            case .strip, .square: context.addPath(CGPath(roundedRect: rect, cornerWidth: 1.5, cornerHeight: 1.5, transform: nil))
-            case .dot: context.addEllipse(in: rect)
+    /// One white image per shape; the cell's colour tints it.
+    static func images(scale: CGFloat) -> [(ConfettiPiece, CGImage)] {
+        ConfettiPiece.allCases.map { piece in
+            let rect = CGRect(origin: .zero, size: piece.size)
+            let image = Canvas(size: piece.size, scale: scale).render { context in
+                context.setFillColor(CGColor(gray: 1, alpha: 1))
+                switch piece {
+                case .strip, .square: context.addPath(CGPath(roundedRect: rect, cornerWidth: 1.5, cornerHeight: 1.5, transform: nil))
+                case .dot: context.addEllipse(in: rect)
+                }
+                context.fillPath()
             }
-            context.fillPath()
+            return (piece, image)
         }
     }
 }

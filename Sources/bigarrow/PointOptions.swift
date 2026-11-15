@@ -116,7 +116,7 @@ struct BehaviourOptions: ParsableArguments {
     @Flag(name: .customLong("until-any-click"), help: "Dismiss on the next click anywhere (needs Accessibility).")
     var untilAnyClick = false
 
-    @Flag(help: "Rain confetti over the arrow's whole display as it appears (5 s; not with Reduce Motion).")
+    @Flag(help: "Confetti from every side over the arrow's whole display as it appears (5 s).")
     var confetti = false
 
     @Flag(help: "Speak the sign with macOS 'say', for when the human is not looking.")

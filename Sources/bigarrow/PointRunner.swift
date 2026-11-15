@@ -63,7 +63,7 @@ struct PointRunner {
 
     /// `--confetti`: started before the arrow, so the arrow's panel is ordered in front of it.
     func startConfetti(on display: Display) throws {
-        guard config.confetti, AnimationMode.resolve(disabled: config.noAnimation) == .full else { return }
+        guard config.confetti else { return }
         try ConfettiShow().start(on: [display], duration: ConfettiPlan.defaultDuration) {}
     }
 
