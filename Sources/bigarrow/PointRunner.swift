@@ -52,12 +52,19 @@ struct PointRunner {
             report(result)
             exit(0)
         }
+        try startConfetti(on: planned.layout.display)
         if let card = config.card {
             try startCard(card, with: planned)
         } else {
             try PointSession(config: config, planner: self, initial: planned).start()
         }
         OverlayApplication.runWithoutActivating()
+    }
+
+    /// `--confetti`: started before the arrow, so the arrow's panel is ordered in front of it.
+    func startConfetti(on display: Display) throws {
+        guard config.confetti, AnimationMode.resolve(disabled: config.noAnimation) == .full else { return }
+        try ConfettiShow().start(on: [display], duration: ConfettiPlan.defaultDuration) {}
     }
 
     /// `point --card`: arrow and card in one session; --duration limits the arrow, the card stays
