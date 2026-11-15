@@ -4,6 +4,13 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-15
+
+### Changed
+- Confetti comes from every side: cannons in both bottom corners, on both side edges and along the bottom shoot it up and inwards, and it rains from the top. Each source times its own burst and lifetime, so every piece has landed before the show ends. Strips flutter faster than squares, dots barely spin.
+- Confetti always plays: Reduce Motion no longer skips `bigarrow confetti` or `--confetti`.
+- README: the confetti section shows a GIF and an MP4 recorded on a clean runner (`scripts/record-confetti.sh`, now a step in `visual.yml`).
+
 ## [0.6.0] - 2026-11-15
 
 ### Added

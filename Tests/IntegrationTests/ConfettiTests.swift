@@ -30,11 +30,6 @@ struct ConfettiTests {
         .enabled(if: ProcessInfo.processInfo.environment["BIGARROW_SCREEN_TESTS"] == "1", "set BIGARROW_SCREEN_TESTS=1 to draw on screen")
     )
     func onScreen() async throws {
-        let reduced = await MainActor.run { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
-        guard !reduced else {
-            print("skipped: Reduce Motion is on, confetti is skipped by design")
-            return
-        }
         let frontBefore = await MainActor.run { NSWorkspace.shared.frontmostApplication?.processIdentifier }
         let detached = try BigArrowProcess.run(["confetti", "--duration", "2", "--detach", "--json"])
         #expect(detached.code == 0, "\(detached.stderr)")
