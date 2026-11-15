@@ -108,9 +108,11 @@ bigarrow start --element "PIN code" --role textfield --app "Google Chrome:Acme s
 
 ## Confetti
 
-The job is done, the tests are green, the PR is merged: the agent rains confetti over your whole screen. Click-through like the arrow, never takes the focus, gone by itself after 5 s (at most 30), and skipped when Reduce Motion is on.
+The job is done, the tests are green, the PR is merged: the agent fires confetti over your whole screen, from every side. Cannons in both bottom corners, on both edges and along the bottom shoot it up and inwards, and it rains from the top. Click-through like the arrow, never takes the focus, gone by itself after 5 s (at most 30).
 
-![A neutral dialog says all checks passed; confetti in eight colours falls over the whole screen while a green arrow points at the Merge button: Franz, all green: merge it](docs/images/real/confetti.png)
+![A neutral dialog says all checks passed; a green arrow points at Merge while confetti in eight colours shoots in from the corners and sides and fills the whole screen](docs/images/confetti.gif)
+
+The same as an [MP4](docs/videos/confetti.mp4), re-recorded on a clean runner by `scripts/record-confetti.sh`.
 
 ```bash
 bigarrow confetti --detach                     # every display, 5 s, returns at once
@@ -258,7 +260,7 @@ Six looks over white, macOS grey, dark, black, red and a busy web page:
 - `--color red|orange|yellow|green|teal|blue|purple|pink|black|white|#RRGGBB`
 - `--border shadow|white-black|black`: white border with drop shadow (default), a thin black edge instead of the shadow, or just a thin black outline
 - `--border-color`, `--text-color`, `--edge-color`, `--close-color`, `--close-x-color`; left out, each picks a readable colour
-- `{{value}}` in `--text` becomes a [copy button](#copy--paste); `--close-button` puts an X inside the sign's right end; `--follow` moves with a window or element; `--until-click` ends on a click on the target; `--confetti` rains confetti over the display; `--say` speaks the sign
+- `{{value}}` in `--text` becomes a [copy button](#copy--paste); `--close-button` puts an X inside the sign's right end; `--follow` moves with a window or element; `--until-click` ends on a click on the target; `--confetti` fires confetti from every side over the display; `--say` speaks the sign
 - Several arrows at once keep their signs out of each other's way
 
 `scripts/gallery.py` renders every combination and zooms into every sign-to-shaft joint ([junctions](docs/images/junctions.png)), because a seam at the joint was, apparently, unacceptable.

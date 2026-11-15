@@ -69,7 +69,7 @@ bigarrow wait          # blocks until an answer: {"result":"button","value":"don
 ## Confetti
 
 A long job is done and it worked (build green, deploy live, PR merged, the human's step
-succeeded): `bigarrow confetti --detach` rains confetti over the whole screen for 5 s,
+succeeded): `bigarrow confetti --detach` fires confetti from every side over the whole screen for 5 s,
 click-through, gone by itself. `--confetti` on `point`/`start` adds it to an arrow, for a happy
 last step ("Franz, all green: merge it"). Only for real success you have verified, once per
 milestone; never on errors, never with an arrow at a pay, delete or send button.

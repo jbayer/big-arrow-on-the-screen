@@ -12,16 +12,16 @@ struct ConfettiResult: Encodable {
     let pieces: Int
     var dryRun = false
     var detached = false
-    var skipped: String?
 }
 
 struct ConfettiCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "confetti",
-        abstract: "Rain confetti over the whole screen, click-through, gone by itself (default 5 s).",
+        abstract: "Confetti over the whole screen from every side, click-through, gone by itself (default 5 s).",
         discussion: """
-        Celebrate a finished step: confetti falls over every display (or one with --display),
-        never takes the focus and lets every click through. Skipped when Reduce Motion is on.
+        Celebrate a finished step: cannons in the corners, on the sides and along the bottom, and a
+        rain from the top, over every display (or one with --display). Always plays, Reduce Motion or not;
+        it never takes the focus and lets every click through.
 
           bigarrow confetti
           bigarrow confetti --duration 8 --detach
@@ -60,10 +60,6 @@ struct ConfettiCommand: ParsableCommand {
             result.dryRun = true
             return report(result)
         }
-        if AnimationMode.resolve(disabled: false) != .full {
-            result.skipped = "Reduce Motion is on"
-            return report(result)
-        }
         if detach {
             result.pid = try spawnChild()
             result.detached = true
@@ -97,14 +93,12 @@ struct ConfettiCommand: ParsableCommand {
         if json { return Output.json(result) }
         let place = result.displays.count == 1 ? "display \(result.displays[0])" : "\(result.displays.count) displays"
         let seconds = Output.number(result.duration)
-        if let skipped = result.skipped {
-            Output.print("bigarrow: no confetti, \(skipped)")
-        } else if result.dryRun {
-            Output.print("bigarrow: would rain about \(result.pieces) pieces of confetti on \(place) for \(seconds) s")
+        if result.dryRun {
+            Output.print("bigarrow: would fire about \(result.pieces) pieces of confetti on \(place) for \(seconds) s")
         } else if result.detached {
             Output.print("bigarrow: confetti on \(place) for \(seconds) s in the background, pid \(result.pid)")
         } else {
-            Output.print("bigarrow: rained confetti on \(place) for \(seconds) s")
+            Output.print("bigarrow: fired confetti on \(place) for \(seconds) s")
         }
     }
 }
