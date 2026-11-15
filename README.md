@@ -7,7 +7,7 @@
 
 ![A real macOS desktop, Hacker News of 2014-06-10 in Chrome, nine bigarrow arrows in nine colours from every side: same since 2007, already argued in 2014, not a lurker? log in, the article is in here, remember me? (Firefox 30), nothing. nothing changed. (a spiral, going round in circles), 20,000 devs 40,000 opinions, finally a bigger arrow, 12 years later: still no consensus](docs/images/hero-hn.png)
 
-[Real apps](#real-apps-real-use-cases) · [Copy & paste](#copy--paste) · [Cue cards](#cue-cards-values-secrets-answers) · [What is it for?](#what-is-this-actually-for) · [Install](#install) · [Commands](#the-three-commands-an-agent-needs) · [Looks](#looks) · [Creative arrows](#creative-arrows) · [Starred by](#starred-by) · [FAQ](#faq) · [How we know it works](#how-we-know-it-works) · [For agents](#for-agents-and-the-humans-who-configure-them) · [Plan](#plan-decisions-research) · [Prior art](#prior-art-and-thanks) · [License](#license)
+[Real apps](#real-apps-real-use-cases) · [Copy & paste](#copy--paste) · [Confetti](#confetti) · [Cue cards](#cue-cards-values-secrets-answers) · [What is it for?](#what-is-this-actually-for) · [Install](#install) · [Commands](#the-three-commands-an-agent-needs) · [Looks](#looks) · [Creative arrows](#creative-arrows) · [Starred by](#starred-by) · [FAQ](#faq) · [How we know it works](#how-we-know-it-works) · [For agents](#for-agents-and-the-humans-who-configure-them) · [Plan](#plan-decisions-research) · [Prior art](#prior-art-and-thanks) · [License](#license)
 
 > Your AI agent can refactor a monorepo, write a migration and explain monads, but when it needs you to click one button it prints *"please click Allow in the dialog"* into a terminal you are not looking at. `bigarrow` gives it a finger.
 
@@ -115,7 +115,7 @@ The job is done, the tests are green, the PR is merged: the agent rains confetti
 ```bash
 bigarrow confetti --detach                     # every display, 5 s, returns at once
 bigarrow confetti --display 2 --duration 8     # one display, a little longer
-bigarrow start --element "Merge" --app backdrop --color green --text "Franz, all green: merge it" --confetti
+bigarrow start --element "Merge" --app "Google Chrome:Pull request" --color green --text "Franz, all green: merge it" --confetti
 ```
 
 ## Cue cards: values, secrets, answers
@@ -258,7 +258,7 @@ Six looks over white, macOS grey, dark, black, red and a busy web page:
 - `--color red|orange|yellow|green|teal|blue|purple|pink|black|white|#RRGGBB`
 - `--border shadow|white-black|black`: white border with drop shadow (default), a thin black edge instead of the shadow, or just a thin black outline
 - `--border-color`, `--text-color`, `--edge-color`, `--close-color`, `--close-x-color`; left out, each picks a readable colour
-- `{{value}}` in `--text` becomes a [copy button](#copy--paste); `--close-button` puts an X inside the sign's right end; `--follow` moves with a window or element; `--until-click` ends on a click on the target; `--say` speaks the sign
+- `{{value}}` in `--text` becomes a [copy button](#copy--paste); `--close-button` puts an X inside the sign's right end; `--follow` moves with a window or element; `--until-click` ends on a click on the target; `--confetti` rains confetti over the display; `--say` speaks the sign
 - Several arrows at once keep their signs out of each other's way
 
 `scripts/gallery.py` renders every combination and zooms into every sign-to-shaft joint ([junctions](docs/images/junctions.png)), because a seam at the joint was, apparently, unacceptable.

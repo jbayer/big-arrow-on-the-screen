@@ -12,7 +12,11 @@ swiftc -O scripts/backdrop.swift -o "$WORK/backdrop"
   --buttons "Close,Merge" --x 460 --y 300 & BACKDROP=$!
 trap 'kill "$BACKDROP" 2>/dev/null; "$BIN" stop --all > /dev/null 2>&1 || true' EXIT
 sleep 2.5
-"$BIN" start --element Merge --role button --app backdrop --color green --from bottom-left \
+# The cover counts as covering the dialog, so an arrow bound with --app would hide: find the
+# button with a dry run, then point at its centre unbound.
+AT=$("$BIN" point --element Merge --role button --app backdrop --text x --dry-run --json \
+  | python3 -I -c 'import json, sys; t = json.load(sys.stdin)["target"]; print(f"{round(t["x"])},{round(t["y"])}")')
+"$BIN" start --at "$AT" --color green \
   --text "Franz, all green: merge it" --confetti --duration 8 > /dev/null
 sleep 1.8
 screencapture -x "$OUT"
