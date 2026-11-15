@@ -106,6 +106,18 @@ bigarrow start --element "PIN code" --role textfield --app "Google Chrome:Acme s
   --color blue --border-color yellow --text-color yellow --text "Franz, copy & paste the PIN {{482913}} here"
 ```
 
+## Confetti
+
+The job is done, the tests are green, the PR is merged: the agent rains confetti over your whole screen. Click-through like the arrow, never takes the focus, gone by itself after 5 s (at most 30), and skipped when Reduce Motion is on.
+
+![A neutral dialog says all checks passed; confetti in eight colours falls over the whole screen while a green arrow points at the Merge button: Franz, all green: merge it](docs/images/real/confetti.png)
+
+```bash
+bigarrow confetti --detach                     # every display, 5 s, returns at once
+bigarrow confetti --display 2 --duration 8     # one display, a little longer
+bigarrow start --element "Merge" --app backdrop --color green --text "Franz, all green: merge it" --confetti
+```
+
 ## Cue cards: values, secrets, answers
 
 When the human needs more than one value, a secret, or has to answer, the agent holds up a cue card: a floating window with copy buttons, an X, and nothing that takes your focus. `bigarrow wait` tells the agent what you did. A card with questions closes itself once you have answered them all (`--keep` keeps it until its X); a card with only values stays until you click its X or the agent closes it (`bigarrow stop --cards`). No time limit, and typing to your agent does not close it.
