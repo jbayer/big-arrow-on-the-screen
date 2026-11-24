@@ -4,6 +4,20 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-15
+
+### Changed
+- Confetti comes from every side: cannons in both bottom corners, on both side edges and along the bottom shoot it up and inwards, and it rains from the top. Each source times its own burst and lifetime, so every piece has landed before the show ends. Strips flutter faster than squares, dots barely spin.
+- Confetti always plays: Reduce Motion no longer skips `bigarrow confetti` or `--confetti`.
+- README: the confetti section shows a GIF and an MP4 recorded on a clean runner (`scripts/record-confetti.sh`, now a step in `visual.yml`).
+
+## [0.6.0] - 2026-11-15
+
+### Added
+- Confetti over the whole screen: `bigarrow confetti` rains confetti in the eight arrow colours (strips, squares, dots) over every display, or one with `--display N`, for `--duration` seconds (default 5, at most 30). Click-through, never takes the focus, ends by itself, skipped when Reduce Motion is on; `--detach` returns at once, `--dry-run` plans it. Core Animation's particle emitter does the work in the render server.
+- `--confetti` on `point` and `start`: the arrow appears with 5 s of confetti over its display, the arrow in front.
+- The skill: confetti for verified success only, never on errors or with an arrow at a pay, delete or send button.
+
 ### Changed
 - README: "Funny cue cards", six real on-screen scenes (buttons, a choice, a question, a checklist, a row arrow, copy buttons), re-created by `scripts/card-scenes.sh`.
 

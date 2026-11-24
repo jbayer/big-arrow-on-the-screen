@@ -50,6 +50,8 @@ jobs:
         run: |
           brew install ffmpeg
           scripts/record-demo.sh visual-out
+      - name: Record the confetti video
+        run: scripts/record-confetti.sh visual-out/confetti
       - uses: actions/upload-artifact@v4
         if: always()
         with:

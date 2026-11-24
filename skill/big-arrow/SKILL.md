@@ -12,10 +12,10 @@ metadata:
 `bigarrow` draws a click-through arrow with a sign, needs no permission and never takes the
 focus. Point at the thing itself, a line in the terminal is easy to miss.
 
-Needs bigarrow 0.5.1 or newer. If `bigarrow --version` prints an older one, upgrade the Flox
+Needs bigarrow 0.6.0 or newer. If `bigarrow --version` prints an older one, upgrade the Flox
 environment that installs `jbayer/bigarrow` first (`flox upgrade -r jbayer/default bigarrow`,
-or `flox upgrade bigarrow` inside a project environment): an old binary has no `card` and
-prints `{{value}}` as plain text.
+or `flox upgrade bigarrow` inside a project environment): an old binary has no `confetti` or
+`card` and prints `{{value}}` as plain text.
 
 ```bash
 open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
@@ -66,6 +66,14 @@ bigarrow wait          # blocks until an answer: {"result":"button","value":"don
 - A row can point: in a JSON card, `"point": {"element": "Password"}` aims the arrow at where that
   value goes, and it moves on when the human copies the next one. `start ... --card card.json`
   shows an arrow and a card together. Row types and JSON: [reference.md](reference.md#cards).
+
+## Confetti
+
+A long job is done and it worked (build green, deploy live, PR merged, the human's step
+succeeded): `bigarrow confetti --detach` fires confetti from every side over the whole screen for 5 s,
+click-through, gone by itself. `--confetti` on `point`/`start` adds it to an arrow, for a happy
+last step ("Franz, all green: merge it"). Only for real success you have verified, once per
+milestone; never on errors, never with an arrow at a pay, delete or send button.
 
 ## Targets
 
